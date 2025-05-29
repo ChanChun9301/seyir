@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:intl/intl.dart';
+import './constants.dart';
 
 class PageModel {
   String id;
@@ -28,31 +29,30 @@ class PageModel {
   });
 
   factory PageModel.fromJson(Map<String, dynamic> json) => PageModel(
-        id: json["pk"].toString(),
-        title: json["name"] = json["name"] ?? '',
-        phone: json["phone"] = json["phone"].toString(),
-        price: json["price"] = json["price"] ?? '',
-        desc: json["text"] = json["text"] ?? '',
-        img: json["img"] = json["img"] ?? '',
-        checked: json["checked"] = json["checked"] ?? '',
-        created: json["created"] =
-            DateTime.tryParse(json['created']) ?? DateTime.now(),
-        addressName: json["address_name"] = json["address_name"] ?? '',
-        categoryName: json["category_name"] = json["category_name"] ?? '',
-      );
+    id: json["pk"].toString(),
+    title: json["name"] ?? '',
+    phone: json["phone"].toString(),
+    price: json["price"] ?? '',
+    desc: json["text"] ?? '',
+    img: json["img"] ?? json["thumbnail"] ?? '',
+    checked: json["checked"] ?? false,
+    created: DateTime.tryParse(json['created']) ?? DateTime.now(),
+    addressName: json["address_name"] ?? '',
+    categoryName: json["category_name"] ?? '',
+  );
   String get createdString => DateFormat('yyyy-MM-dd').format(created);
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "phone": phone,
-        "price": price,
-        "desc": desc,
-        "img": img,
-        "checked": checked,
-        "address_name": addressName,
-        "category_name": categoryName,
-        "created": created,
-      };
+    "id": id,
+    "title": title,
+    "phone": phone,
+    "price": price,
+    "desc": desc,
+    "img": img,
+    "checked": checked,
+    "address_name": addressName,
+    "category_name": categoryName,
+    "created": created,
+  };
 }
 
 class TopPageModel {
@@ -79,31 +79,31 @@ class TopPageModel {
   });
 
   factory TopPageModel.fromJson(Map<String, dynamic> json) => TopPageModel(
-        id: json["pk"].toString(),
-        title: json["name"] = json["name"] ?? '',
-        phone: json["phone"] = json["phone"].toString(),
-        price: json["price"] = json["price"] ?? '',
-        desc: json["text"] = json["text"] ?? '',
-        img: json["img"] = json["img"] ?? '',
-        checked: json["checked"] = json["checked"] ?? '',
-        created: json["created"] =
-            DateTime.tryParse(json['created']) ?? DateTime.now(),
-        addressName: json["address_name"] = json["address_name"] ?? '',
-        // categoryName: json["category_name"] = json["category_name"] ?? '',
-      );
+    id: json["pk"].toString(),
+    title: json["name"] = json["name"] ?? '',
+    phone: json["phone"] = json["phone"].toString(),
+    price: json["price"] = json["price"] ?? '',
+    desc: json["text"] = json["text"] ?? '',
+    img: json["img"] = json["img"] ?? '',
+    checked: json["checked"] = json["checked"] ?? '',
+    created:
+        json["created"] = DateTime.tryParse(json['created']) ?? DateTime.now(),
+    addressName: json["address_name"] = json["address_name"] ?? '',
+    // categoryName: json["category_name"] = json["category_name"] ?? '',
+  );
   String get createdString => DateFormat('yyyy-MM-dd').format(created);
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "phone": phone,
-        "price": price,
-        "desc": desc,
-        "img": img,
-        "checked": checked,
-        "address_name": addressName,
-        // "category_name": categoryName,
-        "created": created,
-      };
+    "id": id,
+    "title": title,
+    "phone": phone,
+    "price": price,
+    "desc": desc,
+    "img": img,
+    "checked": checked,
+    "address_name": addressName,
+    // "category_name": categoryName,
+    "created": created,
+  };
 }
 
 class LogistPageModel {
@@ -154,28 +154,29 @@ class LogistPageModel {
         desc: json["text"] = json["text"] ?? '',
         img: json["img"] = json["img"] ?? '',
         checked: json["checked"] = json["checked"] ?? false,
-        created: json["created"] =
-            DateTime.tryParse(json['created']) ?? DateTime.now(),
+        created:
+            json["created"] =
+                DateTime.tryParse(json['created']) ?? DateTime.now(),
         categoryName: json["category_name"] = json["category_name"] ?? '',
       );
   String get createdString => DateFormat('yyyy-MM-dd').format(created);
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "phone": phone,
-        "where": where,
-        "nirden": nirden,
-        "last_date": lastDate,
-        "bring": isBring,
-        "vip": isVip,
-        "price": price,
-        "desc": desc,
-        "img": img,
-        "checked": checked,
-        // "address_name": addressName,
-        "category_name": categoryName,
-        "created": created,
-      };
+    "id": id,
+    "title": title,
+    "phone": phone,
+    "where": where,
+    "nirden": nirden,
+    "last_date": lastDate,
+    "bring": isBring,
+    "vip": isVip,
+    "price": price,
+    "desc": desc,
+    "img": img,
+    "checked": checked,
+    // "address_name": addressName,
+    "category_name": categoryName,
+    "created": created,
+  };
 }
 
 class LogistDetailModel {
@@ -232,45 +233,48 @@ class LogistDetailModel {
         isVip: json["vip"] ?? false,
         desc: json["text"] ?? '',
         img: json["img"] ?? '',
-        images: json["images"] != null
-            ? List<String>.from(json["images"].map((x) => x))
-            : [],
+        images:
+            json["images"] != null
+                ? List<String>.from(json["images"].map((x) => x))
+                : [],
         created: DateTime.tryParse(json['created'] ?? '') ?? DateTime.now(),
         address: json["address"] ?? '',
         category: json["category"] ?? '',
 
         // ✅ Latitude / Longitude üýtgedilýär
-        latitude: json["latitude"] != null
-            ? double.tryParse(json["latitude"].toString())
-            : null,
-        longitude: json["longitude"] != null
-            ? double.tryParse(json["longitude"].toString())
-            : null,
+        latitude:
+            json["latitude"] != null
+                ? double.tryParse(json["latitude"].toString())
+                : null,
+        longitude:
+            json["longitude"] != null
+                ? double.tryParse(json["longitude"].toString())
+                : null,
       );
 
   String get createdString => DateFormat('yyyy-MM-dd').format(created);
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "phone": phone,
-        "price": price,
-        "where": where,
-        "nirden": nirden,
-        "last_date": lastDate,
-        "bring": isBring,
-        "vip": isVip,
-        "desc": desc,
-        "img": img,
-        "images": images,
-        "category": category,
-        "address": address,
-        "created": created.toIso8601String(),
+    "id": id,
+    "title": title,
+    "phone": phone,
+    "price": price,
+    "where": where,
+    "nirden": nirden,
+    "last_date": lastDate,
+    "bring": isBring,
+    "vip": isVip,
+    "desc": desc,
+    "img": img,
+    "images": images,
+    "category": category,
+    "address": address,
+    "created": created.toIso8601String(),
 
-        // ✅ Latitude / Longitude serialize edilýär
-        "latitude": latitude,
-        "longitude": longitude,
-      };
+    // ✅ Latitude / Longitude serialize edilýär
+    "latitude": latitude,
+    "longitude": longitude,
+  };
 }
 
 class DetailModel {
@@ -278,7 +282,7 @@ class DetailModel {
   String title;
   String desc;
   String img;
-  List<String> images = [];
+  List<String> images;
   String phone;
   String price;
   DateTime created;
@@ -299,33 +303,32 @@ class DetailModel {
   });
 
   factory DetailModel.fromJson(Map<String, dynamic> json) => DetailModel(
-        id: json["pk"].toString(),
-        title: json["name"] = json["name"] ?? '',
-        phone: json["phone"] = json["phone"].toString(),
-        price: json["price"] = json["price"] ?? '',
-        desc: json["text"] = json["text"] ?? '',
-        img: json["img"] = json["img"] ?? '',
-        images: List<String>.from(json["images"].map((x) => x)),
-        created: json["created"] =
-            DateTime.tryParse(json['created']) ?? DateTime.now(),
-        address: json["address"] = json["address"] ?? '',
-        category: json["category"] = json["category"] ?? '',
-      );
+    id: json["pk"].toString(),
+    title: json["name"] ?? '',
+    phone: json["phone"].toString(),
+    price: json["price"] ?? '',
+    desc: removeHtmlTags(json["text"] ?? ''),
+    img: json["img"] ?? '',
+    images: (json["images"] as List).map((e) => e["url"].toString()).toList(),
+    created: DateTime.tryParse(json['created'] ?? '') ?? DateTime.now(),
+    address: json["address"] ?? '',
+    category: json["category"] ?? '',
+  );
+
   String get createdString => DateFormat('yyyy-MM-dd').format(created);
+
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "phone": phone,
-        "price": price,
-        "desc": desc,
-        "img": img,
-        "images":
-            // ignore: unnecessary_null_comparison
-            images == null ? [] : List<dynamic>.from(images.map((x) => x)),
-        "category": category,
-        "address": address,
-        "created": created,
-      };
+    "id": id,
+    "title": title,
+    "phone": phone,
+    "price": price,
+    "desc": desc,
+    "img": img,
+    "images": images,
+    "category": category,
+    "address": address,
+    "created": created.toIso8601String(),
+  };
 }
 
 class PostDetailModel {
@@ -362,79 +365,59 @@ class PostDetailModel {
         desc: json["text"] = json["text"] ?? '',
         img: json["img"] = json["img"] ?? '',
         images: json["images"] = json["images"] ?? '',
-        created: json["created"] =
-            DateTime.tryParse(json['created']) ?? DateTime.now(),
+        created:
+            json["created"] =
+                DateTime.tryParse(json['created']) ?? DateTime.now(),
         address: json["address"] = json["address"] ?? '',
         category: json["category"] = json["category"] ?? '',
       );
   String get createdString => DateFormat('yyyy-MM-dd').format(created);
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "phone": phone,
-        "price": price,
-        "desc": desc,
-        "img": img,
-        "images": images,
-        "category": category,
-        "address": address,
-        "created": created,
-      };
+    "id": id,
+    "title": title,
+    "phone": phone,
+    "price": price,
+    "desc": desc,
+    "img": img,
+    "images": images,
+    "category": category,
+    "address": address,
+    "created": created,
+  };
 }
 
 class CategoryPage {
   String id;
   String title;
 
-  CategoryPage({
-    required this.id,
-    required this.title,
-  });
+  CategoryPage({required this.id, required this.title});
 
-  factory CategoryPage.fromJson(Map<String, dynamic> json) => CategoryPage(
-        id: json["pk"].toString(),
-        title: json["name"],
-      );
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-      };
+  factory CategoryPage.fromJson(Map<String, dynamic> json) =>
+      CategoryPage(id: json["pk"].toString(), title: json["name"]);
+  Map<String, dynamic> toJson() => {"id": id, "title": title};
 }
 
 class AddressPage {
   String id;
   String title;
 
-  AddressPage({
-    required this.id,
-    required this.title,
-  });
+  AddressPage({required this.id, required this.title});
 
-  factory AddressPage.fromJson(Map<String, dynamic> json) => AddressPage(
-        id: json["pk"].toString(),
-        title: json["name"],
-      );
+  factory AddressPage.fromJson(Map<String, dynamic> json) =>
+      AddressPage(id: json["pk"].toString(), title: json["name"]);
 
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-      };
+  Map<String, dynamic> toJson() => {"id": id, "title": title};
 }
 
 class TokenPage {
   String title;
 
-  TokenPage({
-    required this.title,
-  });
+  TokenPage({required this.title});
 
-  factory TokenPage.fromJson(Map<String, dynamic> json) => TokenPage(
-        title: json["name"],
-      );
+  factory TokenPage.fromJson(Map<String, dynamic> json) =>
+      TokenPage(title: json["name"]);
 
-  Map<String, dynamic> toJson() => {
-        "title": title,
-      };
+  Map<String, dynamic> toJson() => {"title": title};
 }
 
 class NewsPage {
@@ -457,49 +440,39 @@ class NewsPage {
   });
 
   factory NewsPage.fromJson(Map<String, dynamic> json) => NewsPage(
-        id: json["pk"].toString(),
-        title: json["name"],
-        desc: json["text"],
-        img: json["img"],
-        created: DateTime.tryParse(json['created']) ?? DateTime.now(),
-        author: json["author"],
-        category: json["category"],
-      );
+    id: json["pk"].toString(),
+    title: json["name"],
+    desc: json["text"],
+    img: json["img"],
+    created: DateTime.tryParse(json['created']) ?? DateTime.now(),
+    author: json["author"],
+    category: json["category"],
+  );
   String get createdString => DateFormat('yyyy-MM-dd').format(created);
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "desc": desc,
-        "img": img,
-        "category": category,
-        "author": author,
-        "created": created,
-      };
+    "id": id,
+    "title": title,
+    "desc": desc,
+    "img": img,
+    "category": category,
+    "author": author,
+    "created": created,
+  };
 }
 
 List<CarouselPage> carouselFromJson(String str) => List<CarouselPage>.from(
-    json.decode(str).map((x) => CarouselPage.fromJson(x)));
+  json.decode(str).map((x) => CarouselPage.fromJson(x)),
+);
 
 class CarouselPage {
   final int pk;
   final String name;
   final String img;
 
-  CarouselPage({
-    required this.pk,
-    required this.name,
-    required this.img,
-  });
+  CarouselPage({required this.pk, required this.name, required this.img});
 
-  factory CarouselPage.fromJson(Map<String, dynamic> json) => CarouselPage(
-        pk: json["pk"],
-        name: json["name"],
-        img: json["img"],
-      );
+  factory CarouselPage.fromJson(Map<String, dynamic> json) =>
+      CarouselPage(pk: json["pk"], name: json["name"], img: json["img"]);
 
-  Map<String, dynamic> toJson() => {
-        "pk": pk,
-        "name": name,
-        "img": img,
-      };
+  Map<String, dynamic> toJson() => {"pk": pk, "name": name, "img": img};
 }

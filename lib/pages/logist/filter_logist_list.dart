@@ -83,7 +83,7 @@ class _LogistFilter extends State<LogistFilter>
     return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.background,
         appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(50),
+            preferredSize: const Size.fromHeight(40),
             child: AppBar(
               backgroundColor: Theme.of(context).colorScheme.primary,
               elevation: 10,

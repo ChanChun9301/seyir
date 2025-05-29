@@ -3,11 +3,11 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:hive_flutter/adapters.dart';
-import 'package:seyir/main.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:seyir/pages/controls/token_control.dart';
-import '/utils/constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '/utils/dialogs.dart';
+import '/utils/constants.dart'; // baseUrl
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController author = TextEditingController();
   final _appTokenBox = Hive.box('apptoken');
   bool _isLoading = false;
-  bool _isError = false;
+  bool _smsRequested = false;
 
   @override
   void dispose() {
@@ -28,61 +28,73 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> checkToken() async {
-    final controller = Get.put<TokenControl>(TokenControl());
-    bool val = await controller.fetchTokenItems();
-    SeyirApp.tokenNotifier.value = val;
-    debugPrint('Token valid: $val');
-  }
-
-  void addToken(String token) {
-    _appTokenBox.put('token', token);
-    debugPrint('Token saved: $token');
-  }
-
   void _showError(String message) {
     showErrorDialog(context, message);
   }
 
-  bool _validateInput() {
-    if (author.text.isEmpty || author.text.length < 8) {
-      _showError("Telefon belgiňizi doly we dogry giriziň.");
-      return false;
+  void saveToken(String token) {
+    _appTokenBox.put('token', token);
+  }
+
+  Future<void> _sendSmsRequest() async {
+    final phone = author.text.trim();
+
+    if (phone.length != 11 || !phone.startsWith('9936')) {
+      _showError("Telefon belgiňizi dogry giriziň. Mysal: 9936*******");
+      return;
     }
-    return true;
+
+    final smsNumber = phone; // SMS ugradyljak belgä doly belgini ulanyň
+    final smsMessage = ""; // boş SMS ugradylýar
+
+    final Uri smsUri = Uri.parse("sms:$smsNumber?body=$smsMessage");
+
+    if (await canLaunchUrl(smsUri)) {
+      await launchUrl(smsUri);
+      setState(() {
+        _smsRequested = true;
+      });
+      showErrorDialog(
+        context,
+        'Telefon programmasy açyldy, boş SMS ugradyň we soňra tassyklamany geçiň.',
+      );
+    } else {
+      _showError('Telefonuňyz SMS ugratmaga rugsat bermeýär.');
+    }
   }
 
   Future<void> _submitLogin() async {
-    if (!_validateInput()) return;
+    final phone = author.text.trim();
+
+    if (!_smsRequested) {
+      _showError("Ilki SMS ugradyň!");
+      return;
+    }
 
     setState(() => _isLoading = true);
 
-    final body = {
-      'author': author.text.substring(3),
-    };
-
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/userprod-list/'),
-        body: jsonEncode(body),
+        Uri.parse('$baseUrl/login/'),
+        body: jsonEncode({'author': phone.substring(3)}),
         headers: {'Content-Type': 'application/json'},
       );
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        log('Login success: $data');
-        addToken(author.text.substring(3));
-        await checkToken();
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SeyirApp()),
-        );
+        final accessToken = data['access'];
+
+        saveToken(accessToken);
+        await Get.put(TokenControl()).fetchTokenItems();
+
+        Navigator.pushReplacementNamed(context, '/home');
+      } else if (response.statusCode == 401) {
+        _showError("SMS tassyklamasy edilmändir ýa-da wagty geçipdir.");
       } else {
-        _showError('Login başarısız: Serwerden nädogry jogap alyndy.');
-        log('Login failed: ${response.statusCode} - ${response.body}');
+        _showError("Ýalňyşlyk ýüze çykdy: ${response.statusCode}");
       }
     } catch (e) {
-      _showError('Ýalňyşlyk ýüze çykdy. Ýene synanyşyň.');
-      log('Login error: $e');
+      _showError("Serwer bilen baglanyşykda ýalňyşlyk: $e");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -93,93 +105,102 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Telefon belgiňizi giriziň!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xff296e48),
-                      fontFamily: 'Bricolage',
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Telefon belgiňizi giriziň!',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xff296e48),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _smsRequested
+                      ? 'SMS ugradyldy! 10 minutyň içinde tassyklamaly.'
+                      : '99361661764 belgä boş SMS ugradyň. Soňra tassyklama üçin giriş ediň.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 32),
+                TextField(
+                  controller: author,
+                  maxLength: 11,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    hintText: '9936*******',
+                    filled: true,
+                    fillColor: const Color(0xfff0f0f0),
+                    counterText: '',
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Telefon belgiňizi girizmeklik bilen siz bildirişleriňizi girizip hem-de dolandyryp bilersiňiz.\nOnuň üçin 99361661764 belgä boş sms ugradyň we jogabyna garasyň.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xff707B81),
-                      fontFamily: 'Bricolage',
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  TextFormField(
-                    controller: author,
-                    maxLength: 11,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      hintText: '9936*******',
-                      filled: true,
-                      fillColor: const Color(0xfff7f7f9),
-                      counterText: '',
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 14,
-                        horizontal: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xff6a6a6a),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _submitLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff296e48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _sendSmsRequest,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xff296e48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
+                        child:
+                            _isLoading
+                                ? const CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                )
+                                : const Text(
+                                  'SMS ugrat',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                ),
                       ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 3,
-                              ),
-                            )
-                          : const Text(
-                              'Tassykla',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Bricolage',
-                                color: Colors.white,
-                              ),
-                            ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _submitLogin,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xff296e48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:
+                            _isLoading
+                                ? const CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                )
+                                : const Text(
+                                  'Giriş et',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),

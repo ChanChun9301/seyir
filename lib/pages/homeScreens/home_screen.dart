@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -27,8 +28,9 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
-  final PageController _pageController =
-      PageController(viewportFraction: 1 / 3.5);
+  final PageController _pageController = PageController(
+    viewportFraction: 1 / 3.5,
+  );
   final CarouselSliderController _carouselController =
       CarouselSliderController();
 
@@ -106,11 +108,13 @@ class HomeScreenState extends State<HomeScreen> {
   Future<List<PageModel>> _fetchPageData() async {
     try {
       final response = await http.get(
-          Uri.parse('$baseUrl/topmain-list/?checked=True&page=$_currentPage'));
+        Uri.parse('$baseUrl/topmain-list/?checked=True&page=$_currentPage'),
+      );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data =
-            jsonDecode(utf8.decode(response.bodyBytes));
+        final Map<String, dynamic> data = jsonDecode(
+          utf8.decode(response.bodyBytes),
+        );
         final List results = data['results'] ?? [];
         return results.map((e) => PageModel.fromJson(e)).toList();
       }
@@ -144,32 +148,40 @@ class HomeScreenState extends State<HomeScreen> {
       onWillPop: _onWillPop,
       child: Scaffold(
         backgroundColor: theme.colorScheme.background,
-        appBar: AppBar(
-          backgroundColor: theme.colorScheme.primary,
-          elevation: 10,
-          centerTitle: true,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-          ),
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: const Icon(Icons.sort_outlined,
-                  color: Colors.white, size: 20),
-              onPressed: () => Scaffold.of(context).openDrawer(),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(40),
+          child: AppBar(
+            backgroundColor: theme.colorScheme.primary,
+            elevation: 10,
+            centerTitle: true,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
             ),
-          ),
-          title: const Text(
-            'Seýir',
-            style: TextStyle(
-              letterSpacing: 5,
-              fontFamily: 'Bricolage',
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              fontStyle: FontStyle.italic,
-              color: Colors.white,
+            leading: Builder(
+              builder:
+                  (context) => IconButton(
+                    icon: const Icon(
+                      Icons.sort_outlined,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+            ),
+            title: const Text(
+              'Seýir',
+              style: TextStyle(
+                letterSpacing: 2,
+                fontFamily: 'Bricolage',
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.italic,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
+
         extendBodyBehindAppBar: true,
         drawer: const NavBar(),
         body: RefreshIndicator(
@@ -181,41 +193,53 @@ class HomeScreenState extends State<HomeScreen> {
                 final carouselItems = _carouselControl.carouselItems;
                 return Container(
                   width: double.infinity,
-                  margin:
-                      EdgeInsets.fromLTRB(height / 84.4, 10, height / 84.4, 0),
-                  decoration:
-                      BoxDecoration(borderRadius: BorderRadius.circular(80)),
-                  child: carouselItems.isNotEmpty
-                      ? CarouselSlider(
-                          items: carouselItems
-                              .map(
-                                (e) => Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 2),
-                                  child: ClipRRect(
-                                    borderRadius:
-                                        BorderRadius.circular(height / 42.2),
-                                    child: Image.network(
-                                      e.img,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          carouselController: _carouselController,
-                          options: CarouselOptions(
-                            scrollPhysics: const BouncingScrollPhysics(),
-                            autoPlay: true,
-                            aspectRatio: 2,
-                            viewportFraction: 1,
-                            onPageChanged: (index, _) {
-                              setState(() => _currentCarouselIndex = index);
-                            },
+                  margin: EdgeInsets.fromLTRB(
+                    height / 84.4,
+                    10,
+                    height / 84.4,
+                    0,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(80),
+                  ),
+                  child:
+                      carouselItems.isNotEmpty
+                          ? CarouselSlider(
+                            items:
+                                carouselItems
+                                    .map(
+                                      (e) => Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 2,
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            height / 42.2,
+                                          ),
+                                          child: Image.network(
+                                            e.img,
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                            carouselController: _carouselController,
+                            options: CarouselOptions(
+                              scrollPhysics: const BouncingScrollPhysics(),
+                              autoPlay: true,
+                              aspectRatio: 2,
+                              viewportFraction: 1,
+                              onPageChanged: (index, _) {
+                                setState(() => _currentCarouselIndex = index);
+                              },
+                            ),
+                          )
+                          : Image.asset(
+                            'assets/no-image.jpg',
+                            fit: BoxFit.fill,
                           ),
-                        )
-                      : Image.asset('assets/no-image.jpg', fit: BoxFit.fill),
                 );
               }),
               const SizedBox(height: 10),
@@ -223,22 +247,23 @@ class HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children:
                     _carouselControl.carouselItems.asMap().entries.map((entry) {
-                  final idx = entry.key;
-                  return GestureDetector(
-                    onTap: () => _carouselController.animateToPage(idx),
-                    child: Container(
-                      width: _currentCarouselIndex == idx ? 17 : 7,
-                      height: 7,
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(height / 84.4),
-                        color: _currentCarouselIndex == idx
-                            ? const Color.fromARGB(255, 161, 93, 83)
-                            : Colors.teal,
-                      ),
-                    ),
-                  );
-                }).toList(),
+                      final idx = entry.key;
+                      return GestureDetector(
+                        onTap: () => _carouselController.animateToPage(idx),
+                        child: Container(
+                          width: _currentCarouselIndex == idx ? 17 : 7,
+                          height: 7,
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(height / 84.4),
+                            color:
+                                _currentCarouselIndex == idx
+                                    ? const Color.fromARGB(255, 161, 93, 83)
+                                    : Colors.teal,
+                          ),
+                        ),
+                      );
+                    }).toList(),
               ),
               SizedBox(height: height / 84.4),
               _buildCategorySection(width, height, theme),
@@ -254,7 +279,7 @@ class HomeScreenState extends State<HomeScreen> {
   Widget _buildCategorySection(double width, double height, ThemeData theme) {
     return Align(
       child: Container(
-        height: 150,
+        height: 140,
         width: width,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: PageView(
@@ -262,18 +287,36 @@ class HomeScreenState extends State<HomeScreen> {
           scrollDirection: Axis.horizontal,
           padEnds: false,
           children: [
-            _categoryCard('Logistika', 'assets/category/1_main.jpg',
-                LogistMainList(filter: '')),
-            _categoryCard('Awtoulaglar', 'assets/category/2_main.jpg',
-                const MainList(pageName: 'Awtoulaglar', queryName: 'car')),
-            _categoryCard('Hyzmatlar', 'assets/category/3_main.jpg',
-                const MainList(pageName: 'Hyzmatlar', queryName: 'service')),
-            _categoryCard('Elin', 'assets/category/4_main.png',
-                const MainList(pageName: 'Elin hyzmatlar', queryName: 'elin')),
-            _categoryCard('Beylekiler', 'assets/category/5_main.jpg',
-                const MainList(pageName: 'Beýlekiler', queryName: 'other')),
             _categoryCard(
-                'Habarlar', 'assets/category/6_main.png', const NewsMainList()),
+              'Logistika',
+              'assets/category/1_main.jpg',
+              LogistMainList(filter: ''),
+            ),
+            _categoryCard(
+              'Awtoulaglar',
+              'assets/category/2_main.jpg',
+              const MainList(pageName: 'Awtoulaglar', queryName: 'car'),
+            ),
+            _categoryCard(
+              'Hyzmatlar',
+              'assets/category/3_main.jpg',
+              const MainList(pageName: 'Hyzmatlar', queryName: 'service'),
+            ),
+            _categoryCard(
+              'Elin',
+              'assets/category/4_main.png',
+              const MainList(pageName: 'Elin hyzmatlar', queryName: 'elin'),
+            ),
+            _categoryCard(
+              'Beylekiler',
+              'assets/category/5_main.jpg',
+              const MainList(pageName: 'Beýlekiler', queryName: 'other'),
+            ),
+            _categoryCard(
+              'Habarlar',
+              'assets/category/6_main.png',
+              const NewsMainList(),
+            ),
           ],
         ),
       ),
@@ -283,25 +326,28 @@ class HomeScreenState extends State<HomeScreen> {
   Widget _categoryCard(String title, String imagePath, Widget route) {
     final double marginHorizontal = MediaQuery.of(context).size.width / 30;
     return InkWell(
-      onTap: () =>
-          Navigator.push(context, MaterialPageRoute(builder: (_) => route)),
+      onTap:
+          () =>
+              Navigator.push(context, MaterialPageRoute(builder: (_) => route)),
       child: Container(
         width: 100,
-        height: 110,
-        margin:
-            EdgeInsets.symmetric(horizontal: marginHorizontal, vertical: 10),
+        // height: 110,
+        // margin: EdgeInsets.symmetric(horizontal: marginHorizontal),
         padding: const EdgeInsets.only(bottom: 5),
-        decoration: BoxDecoration(
-          borderRadius:
-              BorderRadius.circular(MediaQuery.of(context).size.height / 84.4),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.asset(imagePath, fit: BoxFit.cover, height: 80, width: 80),
-            CustomText(title,
-                fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+            Image.asset(imagePath, fit: BoxFit.cover, height: 90, width: 100),
+
+            SizedBox(height: 5),
+            CustomText(
+              removeHtmlTags(title),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
           ],
         ),
       ),
@@ -313,9 +359,10 @@ class HomeScreenState extends State<HomeScreen> {
       return SizedBox(
         height: height / 1.8,
         child: Center(
-          child: _isLoading
-              ? const CircularProgressIndicator()
-              : const Text('Maglumat ýok'),
+          child:
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : const Text('Maglumat ýok'),
         ),
       );
     }
@@ -328,21 +375,73 @@ class HomeScreenState extends State<HomeScreen> {
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final item = _items[index];
-        return CircularContainer(
-          child: ListTile(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => TopDetailPage(
-                          id: item.id,
-                          title: item.title,
-                        )),
-              );
-            },
-            title: CustomText(item.title,
-                fontWeight: FontWeight.bold, fontSize: 19),
-            subtitle: CustomText(item.desc, fontSize: 16),
+        return InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) => TopDetailPage(id: item.id, title: item.title),
+              ),
+            );
+          },
+
+          child: Container(
+            padding: const EdgeInsets.all(12), // own padding
+            width: width(context),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    item.img,
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    errorBuilder:
+                        (context, error, stackTrace) =>
+                            const Icon(Icons.image_not_supported, size: 50),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CustomText(
+                        removeHtmlTags(item.title),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14, // biraz uly etmek has okalýar
+                        maxLines: 1, // bir setirde görkezmek üçin
+                        overflow: TextOverflow.ellipsis,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                      const SizedBox(height: 4),
+                      CustomText(
+                        removeHtmlTags(item.desc),
+                        fontSize: 12,
+                        maxLines: 2,
+                        color: Theme.of(context).colorScheme.secondary,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
