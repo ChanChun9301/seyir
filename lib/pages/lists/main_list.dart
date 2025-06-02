@@ -14,7 +14,7 @@ class MainList extends StatefulWidget {
   final String? pageName;
   final String? queryName;
   const MainList({Key? key, required this.pageName, required this.queryName})
-      : super(key: key);
+    : super(key: key);
   @override
   State<MainList> createState() => _MainListState();
 }
@@ -76,162 +76,173 @@ class _MainListState extends State<MainList>
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: ListAppbar(
-              titleName: widget.pageName!, query: widget.queryName!)),
+        preferredSize: const Size.fromHeight(40),
+        child: ListAppbar(
+          titleName: widget.pageName!,
+          query: widget.queryName!,
+        ),
+      ),
       drawer: const NavBar(),
       extendBodyBehindAppBar: true,
       body: RefreshIndicator(
         onRefresh: _refreshData,
         child: SingleChildScrollView(
           child: ListView.builder(
-              controller: control,
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount:
-                  isLoading ? futureDatas.length + 1 : futureDatas.length,
-              itemBuilder: (context, index) {
-                if (index < futureDatas.length) {
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => DetailPage(
-                                    id: futureDatas[index].id,
-                                    query: widget.queryName!,
-                                    title: futureDatas[index].title,
-                                  )));
-                    },
-                    child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(height(context) / 84.4),
-                          ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color.fromRGBO(99, 99, 99, 0.2),
-                              blurRadius: 8,
-                              spreadRadius: 0,
-                              offset: Offset(
-                                0,
-                                2,
+            controller: control,
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: isLoading ? futureDatas.length + 1 : futureDatas.length,
+            itemBuilder: (context, index) {
+              if (index < futureDatas.length) {
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => DetailPage(
+                              id: futureDatas[index].id,
+                              query: widget.queryName!,
+                              title: futureDatas[index].title,
+                            ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(height(context) / 84.4),
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color.fromRGBO(99, 99, 99, 0.2),
+                          blurRadius: 8,
+                          spreadRadius: 0,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                    ),
+                    margin: EdgeInsets.only(
+                      top: height(context) / 84.4,
+                      left: height(context) / 84.4,
+                      right: height(context) / 84.4,
+                    ),
+                    width: double.infinity,
+                    height: 90,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 150,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(height(context) / 84.4),
+                              bottomLeft: Radius.circular(
+                                height(context) / 84.4,
                               ),
                             ),
-                          ],
-                          color: Theme.of(context).colorScheme.primaryContainer,
+                            color: Colors.white38,
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(height(context) / 84.4),
+                              bottomLeft: Radius.circular(
+                                height(context) / 84.4,
+                              ),
+                            ),
+                            child: Image.network(
+                              (futureDatas[index].img != '')
+                                  ? futureDatas[index].img
+                                  : 'assets/no-image.jpg',
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
-                        margin: EdgeInsets.only(
-                          top: height(context) / 84.4,
-                          left: height(context) / 84.4,
-                          right: height(context) / 84.4,
-                        ),
-                        width: double.infinity,
-                        height: 90,
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 150,
-                                height: double.infinity,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(
-                                          height(context) / 84.4),
-                                      bottomLeft: Radius.circular(
-                                          height(context) / 84.4)),
-                                  color: Colors.white38,
-                                ),
-                                child: ClipRRect(
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(
-                                          height(context) / 84.4),
-                                      bottomLeft: Radius.circular(
-                                          height(context) / 84.4),
+                        Expanded(
+                          child: SizedBox(
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                left: 10,
+                                right: 10,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Text(
+                                    futureDatas[index].title,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.secondary,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Bricolage',
+                                      fontSize: 14,
                                     ),
-                                    child: Image.network(
-                                      (futureDatas[index].img != '')
-                                          ? futureDatas[index].img
-                                          : 'assets/no-image.jpg',
-                                      fit: BoxFit.cover,
-                                    )),
-                              ),
-                              Expanded(
-                                child: SizedBox(
-                                    child: Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 10,
-                                          right: 10,
+                                  ),
+                                  Text(
+                                    futureDatas[index].desc,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.onSecondary,
+                                      fontWeight: FontWeight.w400,
+                                      fontFamily: 'Bricolage',
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      SmallText(
+                                        text:
+                                            futureDatas[index].addressName
+                                                .toString(),
+                                      ),
+                                      SizedBox(
+                                        width: 60,
+                                        child: SmallText(
+                                          text:
+                                              futureDatas[index].categoryName
+                                                  .toString(),
                                         ),
-                                        child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceEvenly,
-                                            children: [
-                                              Text(futureDatas[index].title,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .secondary,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily: 'Bricolage',
-                                                    fontSize: 14,
-                                                  )),
-                                              Text(futureDatas[index].desc,
-                                                  maxLines: 2,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .onSecondary,
-                                                    fontWeight: FontWeight.w400,
-                                                    fontFamily: 'Bricolage',
-                                                    fontSize: 14,
-                                                  )),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  SmallText(
-                                                      text: futureDatas[index]
-                                                          .addressName
-                                                          .toString()),
-                                                  SizedBox(
-                                                    width: 60,
-                                                    child: SmallText(
-                                                        text: futureDatas[index]
-                                                            .categoryName
-                                                            .toString()),
-                                                  ),
-                                                  SmallText(
-                                                      text: (futureDatas[index]
-                                                                  .created
-                                                                  .toString()
-                                                                  .substring(
-                                                                      0, 10) ==
-                                                              formattedDate
-                                                                  .toString())
-                                                          ? 'Şu gün'
-                                                          : futureDatas[index]
-                                                              .created
-                                                              .toString()
-                                                              .substring(
-                                                                  0, 10)),
-                                                ],
-                                              ),
-                                            ]))),
+                                      ),
+                                      SmallText(
+                                        text:
+                                            (futureDatas[index].created
+                                                        .toString()
+                                                        .substring(0, 10) ==
+                                                    formattedDate.toString())
+                                                ? 'Şu gün'
+                                                : futureDatas[index].created
+                                                    .toString()
+                                                    .substring(0, 10),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ])),
-                  );
-                } else {
-                  return const CircularContainerMain();
-                }
-              }),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              } else {
+                return const CircularContainerMain();
+              }
+            },
+          ),
         ),
       ),
     );
@@ -239,7 +250,8 @@ class _MainListState extends State<MainList>
 
   Future<List<PageModel>> getData(String urlName) async {
     final response = await http.get(
-        Uri.parse('$baseUrl/${urlName}main-list/?checked=True&page=$page'));
+      Uri.parse('$baseUrl/${urlName}main-list/?checked=True&page=$page'),
+    );
     if (response.statusCode == 200) {
       Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
       List results = data['results'];

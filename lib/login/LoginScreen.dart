@@ -32,8 +32,9 @@ class _LoginScreenState extends State<LoginScreen> {
     showErrorDialog(context, message);
   }
 
-  void saveToken(String token) {
+  void saveToken(String token, String phone) {
     _appTokenBox.put('token', token);
+    _appTokenBox.put('phone', phone);
   }
 
   Future<void> _sendSmsRequest() async {
@@ -83,8 +84,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final accessToken = data['access'];
-
-        saveToken(accessToken);
+        log('body:-----------------' + accessToken.toString());
+        saveToken(accessToken, phone);
         await Get.put(TokenControl()).fetchTokenItems();
 
         Navigator.pushReplacementNamed(context, '/home');

@@ -14,8 +14,7 @@ import 'package:seyir/pages/homeScreens/home_screen.dart';
 //  Create a Hive Adapter
 class TokenControlAdapter extends TypeAdapter<TokenControl> {
   @override
-  final int typeId =
-      0; // Assign a unique ID for your adapter.  Start from 0 and increment.
+  final int typeId = 0; // Assign a unique ID for your adapter.  Start from 0 and increment.
 
   @override
   TokenControl read(BinaryReader reader) {
@@ -35,7 +34,8 @@ class TokenControlAdapter extends TypeAdapter<TokenControl> {
     // Important:  Only write the token string.
     writer.writeByte(1); // Number of fields to write (just the token)
     writer.writeByte(
-        0); // Field ID for the token (should match the read() method)
+      0,
+    ); // Field ID for the token (should match the read() method)
     writer.write(obj.token); // Write the token string.
   }
 
@@ -58,45 +58,34 @@ class TokenControl extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    //  No need to fetch the token here.  Do it in main or where it's needed.
-    // fetchTokenItems();
   }
 
-  //  Make this method return a Future<void> since it's async and
-  //  you're handling the result internally.
   Future<bool> fetchTokenItems() async {
-    //  Get the token from Hive.  Use a default value of null,
-    //  and handle null explicitly.
     final token = Hive.box('apptoken').get('token') as String?;
+    final phone = Hive.box('apptoken').get('phone') as String?;
 
-    // Log the token.  Good for debugging.
     log('Fetching token from Hive: $token');
-
-    //  Initialize fetchedToken.  Start with false, and only change to true
-    //  if the token is valid.
     bool fetchedToken = false;
 
-    //  Check if the token is null or empty.  If it is, don't even bother
-    //  making the HTTP request.  Return false.
     if (token == null || token.isEmpty) {
       log('Token is null or empty.  Returning false.');
       _token = null; // Also set the internal token to null
       return false;
     }
-
+    log(token.substring(3).toString());
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/user-check/?author=$token'),
+        Uri.parse(
+          '$baseUrl/user-check/?author=${phone.toString().substring(3)}&token=$token',
+        ),
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        //  Check if the 'token' key exists and is true.  Handle the case where
-        //  the key might be missing or have a different type.
+        log('Token???' + data.toString());
         if (data is Map && data['token'] == true) {
           fetchedToken = true;
-          _token =
-              token; // Store the token internally.  IMPORTANT:  Store the token from Hive.
+          _token = token;
           log('Token is valid.');
         } else {
           log('Token is invalid or missing in response.');
@@ -104,24 +93,19 @@ class TokenControl extends GetxController {
         }
       } else {
         //  Handle HTTP errors.  Don't just return false.  Log the error.
-        log('HTTP error: ${response.statusCode} - ${response.body}'); // Include the response body.
+        log(
+          'HTTP error: ${response.statusCode} - ${response.body}',
+        ); // Include the response body.
         _token = null;
-        //  Consider throwing an exception here to be handled by the caller.
-        //  This allows the caller to decide how to handle the error.
-        // throw Exception('Failed to fetch token: ${response.statusCode}');
       }
     } catch (error) {
       //  Catch any exceptions, such as network errors or JSON parsing errors.
       log('Error fetching/verifying token: $error');
       _token = null;
-      //  Consider rethrowing the error to be handled by the caller.
-      //  This is important for the caller to know that something went wrong.
-      // rethrow; //  <---  Important:  Consider rethrowing.
     }
     return fetchedToken;
   }
 
-  //  Add a method to save the token.  This is VERY important.
   Future<void> saveToken(String token) async {
     _token = token; // keep the token updated.
     await Hive.box('apptoken').put('token', token);

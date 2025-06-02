@@ -18,6 +18,7 @@ void main() async {
 
   try {
     final hasToken = await tokenController.fetchTokenItems();
+    log('+++++' + hasToken.toString());
     SeyirApp.tokenNotifier.value = hasToken;
     log('Initial Token State: $hasToken');
   } catch (e) {

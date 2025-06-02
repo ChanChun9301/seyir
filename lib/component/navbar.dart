@@ -49,11 +49,13 @@ class _NavBarState extends State<NavBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        width: MediaQuery.of(context).size.width * 0.5,
-        color: Theme.of(context).colorScheme.background,
-        child: Drawer(
-          backgroundColor: Theme.of(context).colorScheme.background,
-          child: ListView(padding: const EdgeInsets.all(0), children: [
+      width: MediaQuery.of(context).size.width * 0.5,
+      color: Theme.of(context).colorScheme.background,
+      child: Drawer(
+        backgroundColor: Theme.of(context).colorScheme.background,
+        child: ListView(
+          padding: const EdgeInsets.all(0),
+          children: [
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 5),
               child: Column(
@@ -63,61 +65,65 @@ class _NavBarState extends State<NavBar> {
                   Container(
                     width: 1750,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 10),
-                    child: SeyirApp.themeNotifier.value == ThemeMode.light
-                        ? Image.asset('assets/seyir/nav_logo_light.png',
-                            fit: BoxFit.fill)
-                        : Image.asset('assets/seyir/nav_logo_dark.png',
-                            fit: BoxFit.fill),
+                      horizontal: 30,
+                      vertical: 10,
+                    ),
+                    child:
+                        SeyirApp.themeNotifier.value == ThemeMode.light
+                            ? Image.asset(
+                              'assets/seyir/nav_logo_light.png',
+                              fit: BoxFit.fill,
+                            )
+                            : Image.asset(
+                              'assets/seyir/nav_logo_dark.png',
+                              fit: BoxFit.fill,
+                            ),
                   ),
                   InkWell(
                     onTap: () {
                       (SeyirApp.tokenNotifier.value != false)
                           ? null
                           : Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const LoginScreen()));
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
                     },
                     child: Center(
                       child: Text(
-                          (SeyirApp.tokenNotifier.value == true)
-                              ? '+993${_appToken.get('token')}'
-                              : 'Belgiňizi giriziň!',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            letterSpacing: 2,
-                            color: Theme.of(context).secondaryHeaderColor,
-                            fontSize: 14,
-                            fontFamily: "Bricolage",
-                            fontWeight: FontWeight.bold,
-                            shadows: const [
-                              BoxShadow(
-                                color: Color.fromARGB(34, 12, 21, 27),
-                                offset: Offset(
-                                  0,
-                                  4,
-                                ),
-                                blurRadius: 6.0,
-                                spreadRadius: 4.0,
-                              ),
-                              BoxShadow(
-                                color: Colors.white,
-                                offset: Offset(0.0, 0.0),
-                                blurRadius: 0.0,
-                                spreadRadius: 0.0,
-                              ),
-                            ],
-                          )),
+                        (SeyirApp.tokenNotifier.value == true)
+                            ? _appToken.get('phone')
+                            : 'Belgiňizi giriziň!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          letterSpacing: 2,
+                          color: Theme.of(context).secondaryHeaderColor,
+                          fontSize: 14,
+                          fontFamily: "Bricolage",
+                          fontWeight: FontWeight.bold,
+                          shadows: const [
+                            BoxShadow(
+                              color: Color.fromARGB(34, 12, 21, 27),
+                              offset: Offset(0, 4),
+                              blurRadius: 6.0,
+                              spreadRadius: 4.0,
+                            ),
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: Offset(0.0, 0.0),
+                              blurRadius: 0.0,
+                              spreadRadius: 0.0,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            const Divider(
-              height: 2,
-              color: Color.fromRGBO(158, 158, 158, 1),
-            ),
+            const Divider(height: 2, color: Color.fromRGBO(158, 158, 158, 1)),
             ListTile(
               leading: Icon(
                 CupertinoIcons.home,
@@ -127,9 +133,10 @@ class _NavBarState extends State<NavBar> {
               title: Text(
                 'Baş sahypa',
                 style: TextStyle(
-                    color: Theme.of(context).colorScheme.secondary,
-                    fontFamily: "Bricolage",
-                    fontSize: 16),
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontFamily: "Bricolage",
+                  fontSize: 16,
+                ),
               ),
               onTap: () {
                 Navigator.pushNamed(context, '/home');
@@ -139,24 +146,24 @@ class _NavBarState extends State<NavBar> {
               leading: SizedBox(
                 height: 25,
                 width: 25,
-                child: SeyirApp.themeNotifier.value == ThemeMode.light
-                    ? Image.asset(
-                        'assets/delivery_icon.png',
-                      )
-                    : Image.asset(
-                        'assets/delivery_icon_white.png',
-                      ),
+                child:
+                    SeyirApp.themeNotifier.value == ThemeMode.light
+                        ? Image.asset('assets/delivery_icon.png')
+                        : Image.asset('assets/delivery_icon_white.png'),
               ),
               // Icon(
               //   CupertinoIcons.car_detailed,
               //   size: 24,
               //   color: Theme.of(context).colorScheme.secondary,
               // ),
-              title: Text('Logistika',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontFamily: "Bricolage",
-                      fontSize: 16)),
+              title: Text(
+                'Logistika',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontFamily: "Bricolage",
+                  fontSize: 16,
+                ),
+              ),
               onTap: () {
                 Navigator.pushNamed(context, '/logist');
               },
@@ -167,11 +174,14 @@ class _NavBarState extends State<NavBar> {
                 size: 24,
                 color: Theme.of(context).colorScheme.secondary,
               ),
-              title: Text('Awtoulaglar',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontFamily: "Bricolage",
-                      fontSize: 16)),
+              title: Text(
+                'Awtoulaglar',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontFamily: "Bricolage",
+                  fontSize: 16,
+                ),
+              ),
               onTap: () {
                 Navigator.pushNamed(context, '/car');
               },
@@ -182,11 +192,14 @@ class _NavBarState extends State<NavBar> {
                 size: 24,
                 color: Theme.of(context).colorScheme.secondary,
               ),
-              title: Text('Hyzmatlar',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontFamily: "Bricolage",
-                      fontSize: 16)),
+              title: Text(
+                'Hyzmatlar',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontFamily: "Bricolage",
+                  fontSize: 16,
+                ),
+              ),
               onTap: () {
                 Navigator.pushNamed(context, '/service');
               },
@@ -197,11 +210,14 @@ class _NavBarState extends State<NavBar> {
                 size: 24,
                 color: Theme.of(context).colorScheme.secondary,
               ),
-              title: Text('Elin harytlar',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontFamily: "Bricolage",
-                      fontSize: 16)),
+              title: Text(
+                'Elin harytlar',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontFamily: "Bricolage",
+                  fontSize: 16,
+                ),
+              ),
               onTap: () {
                 Navigator.pushNamed(context, '/elin');
               },
@@ -212,11 +228,14 @@ class _NavBarState extends State<NavBar> {
                 size: 24,
                 color: Theme.of(context).colorScheme.secondary,
               ),
-              title: Text('Beýlekiler',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontFamily: "Bricolage",
-                      fontSize: 16)),
+              title: Text(
+                'Beýlekiler',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontFamily: "Bricolage",
+                  fontSize: 16,
+                ),
+              ),
               onTap: () {
                 Navigator.pushNamed(context, '/other');
               },
@@ -227,11 +246,14 @@ class _NavBarState extends State<NavBar> {
                 size: 24,
                 color: Theme.of(context).colorScheme.secondary,
               ),
-              title: Text('Täze habarlar',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontFamily: "Bricolage",
-                      fontSize: 16)),
+              title: Text(
+                'Täze habarlar',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontFamily: "Bricolage",
+                  fontSize: 16,
+                ),
+              ),
               onTap: () {
                 Navigator.pushNamed(context, '/news');
               },
@@ -242,11 +264,14 @@ class _NavBarState extends State<NavBar> {
                 size: 24,
                 color: Theme.of(context).colorScheme.secondary,
               ),
-              title: Text('Bildirişlerim',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontFamily: "Bricolage",
-                      fontSize: 16)),
+              title: Text(
+                'Bildirişlerim',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontFamily: "Bricolage",
+                  fontSize: 16,
+                ),
+              ),
               onTap: () {
                 Navigator.pushNamed(context, '/added_list');
               },
@@ -266,36 +291,40 @@ class _NavBarState extends State<NavBar> {
                 size: 24,
               ),
               title: Text(
-                  SeyirApp.themeNotifier.value == ThemeMode.light
-                      ? 'Garaňky'
-                      : 'Ýagty',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontFamily: "Bricolage",
-                      fontSize: 16)),
+                SeyirApp.themeNotifier.value == ThemeMode.light
+                    ? 'Garaňky'
+                    : 'Ýagty',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontFamily: "Bricolage",
+                  fontSize: 16,
+                ),
+              ),
             ),
-            const Divider(
-              height: 2,
-              color: Colors.grey,
-            ),
+            const Divider(height: 2, color: Colors.grey),
             ListTile(
               leading: Icon(
                 Icons.exit_to_app,
                 color: Theme.of(context).colorScheme.secondary,
                 size: 24,
               ),
-              title: Text('Ulgamdan çyk',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontFamily: "Bricolage",
-                      fontSize: 16)),
+              title: Text(
+                'Ulgamdan çyk',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontFamily: "Bricolage",
+                  fontSize: 16,
+                ),
+              ),
               onTap: () {
                 logout(token, false);
                 deleteToken();
                 Navigator.pushNamed(context, '/home');
               },
             ),
-          ]),
-        ));
+          ],
+        ),
+      ),
+    );
   }
 }

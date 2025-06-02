@@ -387,7 +387,6 @@ class HomeScreenState extends State<HomeScreen> {
           },
 
           child: Container(
-            padding: const EdgeInsets.all(12), // own padding
             width: width(context),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer,
@@ -407,8 +406,8 @@ class HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(
                     item.img,
-                    width: 70,
-                    height: 70,
+                    width: 100,
+                    height: 90,
                     fit: BoxFit.cover,
                     errorBuilder:
                         (context, error, stackTrace) =>
@@ -417,27 +416,34 @@ class HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CustomText(
-                        removeHtmlTags(item.title),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14, // biraz uly etmek has okalýar
-                        maxLines: 1, // bir setirde görkezmek üçin
-                        overflow: TextOverflow.ellipsis,
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                      const SizedBox(height: 4),
-                      CustomText(
-                        removeHtmlTags(item.desc),
-                        fontSize: 12,
-                        maxLines: 2,
-                        color: Theme.of(context).colorScheme.secondary,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                  child: Container(
+                    padding: const EdgeInsets.only(
+                      top: 5,
+                      right: 10,
+                      // bottom: 10,
+                    ), // own padding
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CustomText(
+                          removeHtmlTags(item.title),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14, // biraz uly etmek has okalýar
+                          maxLines: 1, // bir setirde görkezmek üçin
+                          overflow: TextOverflow.ellipsis,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                        const SizedBox(height: 4),
+                        CustomText(
+                          removeHtmlTags(item.desc),
+                          fontSize: 12,
+                          maxLines: 2,
+                          color: Theme.of(context).colorScheme.secondary,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
