@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:seyir/utils/models.dart';
 
-String baseUrl='http://localhost:8000';
+String baseUrl = 'http://localhost:8000';
 // String baseUrl = 'http://10.10.73.81:8000';
 // String baseUrl = 'https://userjames.pythonanywhere.com/';
 // String baseUrl = 'http://192.168.0.104:8000';
@@ -10,6 +11,10 @@ bool iOS(BuildContext context) {
   bool iOS = Theme.of(context).platform == TargetPlatform.iOS;
   return iOS;
 }
+
+List<SaylananSalgy> selectedSubaddresses = [];
+List<SaylananCategory> selectedSubcategories = [];
+
 
 height(BuildContext context) {
   double h = MediaQuery.of(context).size.height;

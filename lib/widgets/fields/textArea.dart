@@ -5,10 +5,7 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_quill/flutter_quill.dart';
 
 class TextArea extends StatefulWidget {
-  const TextArea({
-    super.key,
-    required this.descCtr,
-  });
+  const TextArea({super.key, required this.descCtr});
 
   final TextEditingController descCtr;
 
@@ -23,17 +20,14 @@ class _TextAreaState extends State<TextArea> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration:const  BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Color.fromRGBO(99, 99, 99, 0.2),
             blurRadius: 8,
             spreadRadius: 0,
-            offset: Offset(
-              0,
-              2,
-            ),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -64,22 +58,33 @@ class _TextAreaState extends State<TextArea> {
           //   ),
           // ),
           TextField(
+            minLines: 5,
             controller: widget.descCtr,
             style: TextStyle(
-                color: Theme.of(context).colorScheme.secondary,
-                fontSize: 12,
-                fontFamily: 'Bricolage'),
+              color: Theme.of(context).colorScheme.secondary,
+              fontSize: 12,
+              fontFamily: 'Bricolage',
+            ),
             maxLines: 10,
             decoration: InputDecoration(
-              border: const OutlineInputBorder(),
+              border: OutlineInputBorder(
+                borderSide: const BorderSide(width: 2, color: Colors.white38),
+                borderRadius: BorderRadius.circular(8),
+              ),
               contentPadding: const EdgeInsets.only(
-                  top: 10, bottom: 10, left: 20, right: 20),
+                top: 5,
+                bottom: 5,
+                left: 20,
+                right: 20,
+              ),
               enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(width: 2, color: Colors.white38),
-                  borderRadius: BorderRadius.circular(8)),
+                borderSide: const BorderSide(width: 2, color: Colors.white38),
+                borderRadius: BorderRadius.circular(8),
+              ),
               focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(width: 2, color: Colors.green),
-                  borderRadius: BorderRadius.circular(8)),
+                borderSide: const BorderSide(width: 2, color: Colors.green),
+                borderRadius: BorderRadius.circular(8),
+              ),
               filled: true,
               focusColor: Colors.white38,
               fillColor: Theme.of(context).colorScheme.primaryContainer,

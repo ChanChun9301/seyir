@@ -22,45 +22,44 @@ class PhoneTextFieldCustom extends StatelessWidget {
             color: Color.fromRGBO(99, 99, 99, 0.2),
             blurRadius: 8,
             spreadRadius: 0,
-            offset: Offset(
-              0,
-              2,
-            ),
+            offset: Offset(0, 2),
           ),
         ],
       ),
       width: w / 2.2,
-      height: 50,
+      height: 30,
       child: TextField(
         controller: ctr,
         maxLines: 1,
         style: TextStyle(
-            color: Theme.of(context).colorScheme.secondary,
-            fontSize: 12,
-            fontFamily: 'Bricolage'),
+          color: Theme.of(context).colorScheme.secondary,
+          fontSize: 12,
+          fontFamily: 'Bricolage',
+        ),
         keyboardType: TextInputType.phone,
-        inputFormatters: [
-          LengthLimitingTextInputFormatter(11),
-        ],
+        inputFormatters: [LengthLimitingTextInputFormatter(11)],
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: const BorderRadius.all(Radius.circular(12)),
             borderSide: BorderSide(
-                width: 2, color: Theme.of(context).colorScheme.secondary),
+              width: 2,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
           ),
-          contentPadding:
-              const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
+          contentPadding: const EdgeInsets.only(left: 10, right: 10),
           prefixIcon: Icon(
             CupertinoIcons.phone,
             size: 12,
             color: Theme.of(context).colorScheme.secondary,
           ),
           enabledBorder: OutlineInputBorder(
-              borderSide: const BorderSide(width: 2, color: Colors.white38),
-              borderRadius: BorderRadius.circular(8)),
+            borderSide: const BorderSide(width: 2, color: Colors.white38),
+            borderRadius: BorderRadius.circular(8),
+          ),
           focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(width: 2, color: Colors.green),
-              borderRadius: BorderRadius.circular(8)),
+            borderSide: const BorderSide(width: 2, color: Colors.green),
+            borderRadius: BorderRadius.circular(8),
+          ),
           filled: true,
           focusColor: Colors.green[600],
           fillColor: Theme.of(context).colorScheme.primaryContainer,

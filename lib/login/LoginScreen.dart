@@ -133,10 +133,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: author,
                   maxLength: 11,
                   keyboardType: TextInputType.phone,
+                  style: TextStyle(
+                    color: Colors.grey, // Change text color here
+                    fontSize: 14,
+                  ),
                   decoration: InputDecoration(
                     hintText: '9936*******',
                     filled: true,
                     fillColor: const Color(0xfff0f0f0),
+
                     counterText: '',
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                     border: OutlineInputBorder(

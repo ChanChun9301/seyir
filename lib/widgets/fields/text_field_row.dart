@@ -30,7 +30,7 @@ class TextFieldRowCustom extends StatelessWidget {
         ],
       ),
       width: w / 2.2,
-      height: 50,
+      height: 40,
       child: TextField(
         controller: ctr,
         maxLines: 1,

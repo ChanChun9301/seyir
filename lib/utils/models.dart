@@ -397,16 +397,91 @@ class CategoryPage {
   Map<String, dynamic> toJson() => {"id": id, "title": title};
 }
 
+class SaylananCategory {
+  final int id;
+  final String name;
+
+  SaylananCategory({required this.id, required this.name});
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name};
+
+  factory SaylananCategory.fromJson(Map<String, dynamic> json) =>
+      SaylananCategory(id: json['id'], name: json['name']);
+}
+
+class SaylananSalgy {
+  final int id;
+  final String name;
+
+  SaylananSalgy({required this.id, required this.name});
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name};
+
+  factory SaylananSalgy.fromJson(Map<String, dynamic> json) =>
+      SaylananSalgy(id: json['id'], name: json['name']);
+}
+
+class LogistCategory {
+  final int pk;
+  final String name;
+  final List<LogistSubCategory> subcategories;
+
+  LogistCategory({
+    required this.pk,
+    required this.name,
+    required this.subcategories,
+  });
+
+  factory LogistCategory.fromJson(Map<String, dynamic> json) {
+    return LogistCategory(
+      pk: json['pk'],
+      name: json['name'],
+      subcategories:
+          (json['subcategories'] as List)
+              .map((e) => LogistSubCategory.fromJson(e))
+              .toList(),
+    );
+  }
+}
+
+class LogistSubCategory {
+  final int pk;
+  final String name;
+
+  LogistSubCategory({required this.pk, required this.name});
+
+  factory LogistSubCategory.fromJson(Map<String, dynamic> json) {
+    return LogistSubCategory(pk: json['pk'], name: json['name']);
+  }
+}
+
 class AddressPage {
   String id;
   String title;
+  List<AddressPage> subaddresses;
 
-  AddressPage({required this.id, required this.title});
+  AddressPage({
+    required this.id,
+    required this.title,
+    this.subaddresses = const [],
+  });
 
-  factory AddressPage.fromJson(Map<String, dynamic> json) =>
-      AddressPage(id: json["pk"].toString(), title: json["name"]);
+  factory AddressPage.fromJson(Map<String, dynamic> json) => AddressPage(
+    id: json["pk"].toString(),
+    title: json["name"],
+    subaddresses:
+        json["subaddresses"] != null
+            ? List<AddressPage>.from(
+              json["subaddresses"].map((x) => AddressPage.fromJson(x)),
+            )
+            : [],
+  );
 
-  Map<String, dynamic> toJson() => {"id": id, "title": title};
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "title": title,
+    "subaddresses": List<dynamic>.from(subaddresses.map((x) => x.toJson())),
+  };
 }
 
 class TokenPage {

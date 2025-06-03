@@ -32,7 +32,6 @@ void main() async {
 class SeyirApp extends StatefulWidget {
   const SeyirApp({Key? key}) : super(key: key);
 
-  // Global notifiers for theme and token state
   static final themeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
   static final tokenNotifier = ValueNotifier<bool>(false);
 

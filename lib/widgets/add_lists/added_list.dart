@@ -25,7 +25,7 @@ class _AddedListState extends State<AddedList>
   void initState() {
     super.initState();
     setState(() {
-      token = _appToken.get('token') ?? '';
+      token = _appToken.get('phone') ?? '';
     });
   }
 
@@ -36,50 +36,54 @@ class _AddedListState extends State<AddedList>
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            notificationPredicate: (ScrollNotification notification) {
-              return notification.depth == 1;
+        preferredSize: const Size.fromHeight(40),
+        child: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          notificationPredicate: (ScrollNotification notification) {
+            return notification.depth == 1;
+          },
+          centerTitle: true,
+          scrolledUnderElevation: 4.0,
+          title: const Text(
+            'Goşulanlar',
+            style: TextStyle(
+              fontStyle: FontStyle.italic,
+              letterSpacing: 2,
+              fontFamily: "Bricolage",
+              fontSize: 16,
+              color: Colors.white,
+            ),
+          ),
+          leading: Builder(
+            builder: (BuildContext context) {
+              return IconButton(
+                icon: const Icon(
+                  Icons.sort_outlined,
+                  color: Colors.white,
+                  size: 16,
+                ),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              );
             },
-            centerTitle: true,
-            scrolledUnderElevation: 4.0,
-            title: const Text(
-              'Goşulanlar',
-              style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  letterSpacing: 2,
-                  fontFamily: "Bricolage",
-                  fontSize: 20,
-                  color: Colors.white),
-            ),
-            leading: Builder(
-              builder: (BuildContext context) {
-                return IconButton(
-                  icon: const Icon(
-                    Icons.sort_outlined,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                );
-              },
-            ),
-            shape: const RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.vertical(bottom: Radius.circular(30))),
-          )),
+          ),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+          ),
+        ),
+      ),
       extendBodyBehindAppBar: true,
       drawer: const NavBar(),
-      body: PageView(children: [
-        AddedLogist(token: token),
-        AddedCarWidget(token: token),
-        AddedServiceWidget(token: token),
-        AddedElinWidget(token: token),
-        AddedOtherWidget(token: token),
-      ]),
+      body: PageView(
+        children: [
+          AddedLogist(token: token.substring(3)),
+          AddedCarWidget(token: token.substring(3)),
+          AddedServiceWidget(token: token.substring(3)),
+          AddedElinWidget(token: token.substring(3)),
+          AddedOtherWidget(token: token.substring(3)),
+        ],
+      ),
     );
   }
 }

@@ -135,7 +135,7 @@ class _NavBarState extends State<NavBar> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontFamily: "Bricolage",
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
               onTap: () {
@@ -161,7 +161,7 @@ class _NavBarState extends State<NavBar> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontFamily: "Bricolage",
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
               onTap: () {
@@ -179,7 +179,7 @@ class _NavBarState extends State<NavBar> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontFamily: "Bricolage",
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
               onTap: () {
@@ -197,7 +197,7 @@ class _NavBarState extends State<NavBar> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontFamily: "Bricolage",
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
               onTap: () {
@@ -215,7 +215,7 @@ class _NavBarState extends State<NavBar> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontFamily: "Bricolage",
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
               onTap: () {
@@ -233,7 +233,7 @@ class _NavBarState extends State<NavBar> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontFamily: "Bricolage",
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
               onTap: () {
@@ -251,7 +251,7 @@ class _NavBarState extends State<NavBar> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontFamily: "Bricolage",
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
               onTap: () {
@@ -269,7 +269,7 @@ class _NavBarState extends State<NavBar> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontFamily: "Bricolage",
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
               onTap: () {
@@ -297,7 +297,7 @@ class _NavBarState extends State<NavBar> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontFamily: "Bricolage",
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -313,7 +313,7 @@ class _NavBarState extends State<NavBar> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontFamily: "Bricolage",
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
               onTap: () {
