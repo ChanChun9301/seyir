@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:seyir/pages/controls/token_control.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '/utils/dialogs.dart';
+import 'package:http/http.dart' as http;
 import '/utils/constants.dart'; // baseUrl
+import '/utils/dialogs.dart';
+import '/pages/controls/token_control.dart';
+import '/pages/homeScreens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,55 +20,33 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController author = TextEditingController();
   final _appTokenBox = Hive.box('apptoken');
   bool _isLoading = false;
-  bool _smsRequested = false;
-
-  @override
-  void dispose() {
-    author.dispose();
-    super.dispose();
-  }
 
   void _showError(String message) {
     showErrorDialog(context, message);
   }
 
-  void saveToken(String token, String phone) {
-    _appTokenBox.put('token', token);
-    _appTokenBox.put('phone', phone);
-  }
+  /// Форматирует телефон → оставляем только 8 цифр
+  String _formatPhone(String value) {
+    String phone = value.replaceAll(RegExp(r'[^0-9]'), '');
 
-  Future<void> _sendSmsRequest() async {
-    final phone = author.text.trim();
-
-    if (phone.length != 11 || !phone.startsWith('9936')) {
-      _showError("Telefon belgiňizi dogry giriziň. Mysal: 9936*******");
-      return;
+    if (phone.startsWith('993')) {
+      phone = phone.substring(3);
     }
 
-    final smsNumber = phone; // SMS ugradyljak belgä doly belgini ulanyň
-    final smsMessage = ""; // boş SMS ugradylýar
-
-    final Uri smsUri = Uri.parse("sms:$smsNumber?body=$smsMessage");
-
-    if (await canLaunchUrl(smsUri)) {
-      await launchUrl(smsUri);
-      setState(() {
-        _smsRequested = true;
-      });
-      showErrorDialog(
-        context,
-        'Telefon programmasy açyldy, boş SMS ugradyň we soňra tassyklamany geçiň.',
-      );
-    } else {
-      _showError('Telefonuňyz SMS ugratmaga rugsat bermeýär.');
+    if (phone.length != 8) {
+      throw Exception("8 belgili telefon giriziň! Mysal: 61234567");
     }
+
+    return phone;
   }
 
   Future<void> _submitLogin() async {
-    final phone = author.text.trim();
+    late String phone;
 
-    if (!_smsRequested) {
-      _showError("Ilki SMS ugradyň!");
+    try {
+      phone = _formatPhone(author.text);
+    } catch (e) {
+      _showError(e.toString().replaceAll('Exception: ', ''));
       return;
     }
 
@@ -77,28 +55,48 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/login/'),
-        body: jsonEncode({'author': phone.substring(3)}),
         headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'author': phone}),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+
         final accessToken = data['access'];
-        log('body:-----------------' + accessToken.toString());
-        saveToken(accessToken, phone);
+        final refreshToken = data['refresh'];
+
+        log('ACCESS: $accessToken');
+        log('REFRESH: $refreshToken');
+        log('PHONE: $phone');
+
+        // Сохраняем токены и телефон в Hive
+        _appTokenBox.put('jwt', accessToken);
+        _appTokenBox.put('refresh', refreshToken);
+        _appTokenBox.put('phone', phone);
+
+        // Обновляем контроллер
         await Get.put(TokenControl()).fetchTokenItems();
 
-        Navigator.pushReplacementNamed(context, '/home');
-      } else if (response.statusCode == 401) {
-        _showError("SMS tassyklamasy edilmändir ýa-da wagty geçipdir.");
+        // Переходим на домашний экран
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
       } else {
-        _showError("Ýalňyşlyk ýüze çykdy: ${response.statusCode}");
+        final error = jsonDecode(response.body)['error'];
+        _showError(error ?? 'Ýalňyşlyk ýüze çykdy');
       }
     } catch (e) {
       _showError("Serwer bilen baglanyşykda ýalňyşlyk: $e");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  @override
+  void dispose() {
+    author.dispose();
+    super.dispose();
   }
 
   @override
@@ -110,7 +108,6 @@ class _LoginScreenState extends State<LoginScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
                   'Telefon belgiňizi giriziň!',
@@ -120,29 +117,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Color(0xff296e48),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  _smsRequested
-                      ? 'SMS ugradyldy! 10 minutyň içinde tassyklamaly.'
-                      : '99361661764 belgä boş SMS ugradyň. Soňra tassyklama üçin giriş ediň.',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.grey),
+                const SizedBox(height: 10),
+                const Text(
+                  'Mysal: 61234567',
+                  style: TextStyle(color: Colors.grey),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 30),
                 TextField(
                   controller: author,
-                  maxLength: 11,
                   keyboardType: TextInputType.phone,
-                  style: TextStyle(
-                    color: Colors.grey, // Change text color here
-                    fontSize: 14,
-                  ),
+                  maxLength: 8,
                   decoration: InputDecoration(
-                    hintText: '9936*******',
+                    hintText: '61234567',
+                    counterText: '',
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
                     filled: true,
                     fillColor: const Color(0xfff0f0f0),
-
-                    counterText: '',
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -150,61 +142,33 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _sendSmsRequest,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xff296e48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child:
-                            _isLoading
-                                ? const CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                )
-                                : const Text(
-                                  'SMS ugrat',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                ),
+                const SizedBox(height: 40),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _submitLogin,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xff296e48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _submitLogin,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xff296e48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child:
-                            _isLoading
-                                ? const CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                )
-                                : const Text(
-                                  'Giriş et',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                      ),
-                    ),
-                  ],
+                    child:
+                        _isLoading
+                            ? const CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            )
+                            : const Text(
+                              'Giriş et',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                  ),
                 ),
               ],
             ),

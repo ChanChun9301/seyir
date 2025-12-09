@@ -330,7 +330,7 @@ class _LogistTabOneListState extends State<LogistTabOneList>
 
   Future<List<LogistCarPageModel>> getData(String filter) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/logistcarmain-list/?checked=True&page=$page$filter'),
+      Uri.parse('$baseUrl/logistika/?checked=True&page=$page$filter'),
     );
     if (response.statusCode == 200) {
       Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));

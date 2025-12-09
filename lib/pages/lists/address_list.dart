@@ -1,136 +1,143 @@
-// ignore: unnecessary_import
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:seyir/pages/logist/filter_logist_list.dart';
-import '/pages/controls/address_control.dart';
-import '/utils/constants.dart';
-import '/widgets/circulateContainer.dart';
-import '../../component/navbar.dart';
-import 'filter_list.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:seyir/component/navbar.dart';
+import 'package:seyir/utils/constants.dart';
+import 'package:seyir/utils/models.dart';
 
-class AddressList extends StatefulWidget {
-  final String? name;
+class MainAddressPage extends StatefulWidget {
+  const MainAddressPage({Key? key}) : super(key: key);
 
-  const AddressList({
-    Key? key,
-    required this.name,
-  }) : super(key: key);
   @override
-  State<AddressList> createState() => _CarAddressListState();
+  State<MainAddressPage> createState() => _MainAddressPageState();
 }
 
-class _CarAddressListState extends State<AddressList>
-    with SingleTickerProviderStateMixin {
+class _MainAddressPageState extends State<MainAddressPage> {
+  late Future<List<AddressPage>> _addressesFuture;
+  List<SaylananSalgy> selectedSubaddresses = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _addressesFuture = fetchAddress();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(AddressControl());
-    controller.fetchAddressItems();
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
-      appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            elevation: 10,
-            centerTitle: true,
-            title: const Text(
-              'Salgylar',
-              style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  letterSpacing: 2,
-                  fontFamily: "Bricolage",
-                  fontSize: 20,
-                  color: Colors.white),
-            ),
-            actions: <Widget>[
-              IconButton(
-                icon: const Icon(Icons.arrow_outward_outlined),
-                color: Colors.white,
-                iconSize: 20,
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              )
-            ],
-            leading: Builder(
-              builder: (BuildContext context) {
-                return IconButton(
-                  icon: const Icon(
-                    Icons.sort_outlined,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                );
-              },
-            ),
-            shape: const RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.vertical(bottom: Radius.circular(30))),
-          )),
       drawer: const NavBar(),
-      body: SafeArea(
-          child: ListView(children: [
-        GetX<AddressControl>(
-            init: AddressControl(),
-            builder: (controller) {
-              if (controller.addressItems.isEmpty) {
-                return const CircularContainerMain();
-              }
-              return ListView.builder(
-                  physics: const BouncingScrollPhysics(
-                      parent: AlwaysScrollableScrollPhysics()),
-                  shrinkWrap: true,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: width(context) / 30),
-                  itemCount: controller.addressItems.length,
-                  itemBuilder: (context, index) {
-                    final address = controller.addressItems[index];
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ListTile(
-                          title: Text(address.title,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary,
-                                fontWeight: FontWeight.w400,
-                                fontFamily: 'Bricolage',
-                                fontSize: 12,
-                              )),
-                          onTap: () {
-                            if (widget.name == 'logist') {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: ((context) => LogistFilter(
-                                            pageName: 'logist',
-                                            name: address.title,
-                                            url: 'address',
-                                          ))));
+      appBar: AppBar(
+        title: const Text('Salgylar'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+      body: FutureBuilder<List<AddressPage>>(
+        future: _addressesFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("Maglumat ýok"));
+          }
+
+          final addresses =
+              snapshot.data!.where((e) => e.subaddresses.isNotEmpty).toList();
+
+          return ListView.builder(
+            itemCount: addresses.length,
+            itemBuilder: (context, index) {
+              final address = addresses[index];
+
+              return ExpansionTile(
+                title: Text(
+                  address.title,
+                  style: TextStyle(
+                    fontFamily: 'Bricolage',
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+                shape: RoundedRectangleBorder(
+                  side: BorderSide.none, // Açylan ýagdaýda hem border ýok
+                ),
+                backgroundColor: Colors.transparent, // Arkafon reňki göni
+                collapsedBackgroundColor: Colors.transparent,
+                collapsedShape: RoundedRectangleBorder(
+                  side: BorderSide.none, // Çökelen ýagdaýda border ýok
+                ),
+
+                children:
+                    address.subaddresses.map((sub) {
+                      final isSelected = selectedSubaddresses.any(
+                        (item) => item.id == int.parse(sub.id),
+                      );
+
+                      return CheckboxListTile(
+                        title: Text(
+                          sub.title,
+                          style: TextStyle(
+                            fontFamily: 'Bricolage',
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                        value: isSelected,
+                        activeColor: Theme.of(context).colorScheme.primary,
+                        fillColor: MaterialStateProperty.resolveWith<Color>((
+                          Set<MaterialState> states,
+                        ) {
+                          if (states.contains(MaterialState.selected)) {
+                            return Theme.of(context)
+                                .colorScheme
+                                .primary; // seçilen ýagdaýda ikon reňki
+                          }
+                          return Colors.grey; // saýlanmadyk ýagdaýda ikon reňki
+                        }),
+                        checkColor: Colors.white,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        onChanged: (val) {
+                          setState(() {
+                            if (val == true) {
+                              selectedSubaddresses.add(
+                                SaylananSalgy(
+                                  id: int.parse(sub.id),
+                                  name: sub.title,
+                                ),
+                              );
                             } else {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: ((context) => Filter(
-                                            pageName: widget.name,
-                                            name: address.title,
-                                            url: 'address',
-                                          ))));
+                              selectedSubaddresses.removeWhere(
+                                (item) => item.id == int.parse(sub.id),
+                              );
                             }
-                          },
-                        ),
-                        const Divider(
-                          height: 2,
-                          color: Colors.grey,
-                        ),
-                      ],
-                    );
-                  });
-            })
-      ])),
+                          });
+                        },
+                      );
+                    }).toList(),
+              );
+            },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.pop(context, selectedSubaddresses);
+        },
+        icon: const Icon(Icons.check),
+        label: const Text("Ýatda sakla"),
+      ),
     );
+  }
+}
+
+Future<List<AddressPage>> fetchAddress() async {
+  final response = await http.get(Uri.parse('$baseUrl/addresses/'));
+
+  if (response.statusCode == 200) {
+    final List<dynamic> jsonData = json.decode(response.body);
+    return jsonData.map((e) => AddressPage.fromJson(e)).toList();
+  } else {
+    throw Exception('Salgylar ýükläp bolmady');
   }
 }

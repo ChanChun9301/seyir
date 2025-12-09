@@ -1,7 +1,8 @@
+import 'dart:developer';
+
 import 'package:get/get.dart';
 import 'package:seyir/pages/controls/token_control.dart';
 import 'package:seyir/utils/logout.dart';
-
 import '/login/LoginScreen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ class _NavBarState extends State<NavBar> {
   void check() async {
     final controller = Get.put<TokenControl>(TokenControl());
     fetchedToken = controller.fetchTokenItems();
+    log('!!! TOKEN-naýbar:' + SeyirApp.tokenNotifier.value.toString());
     fetchedToken.then((val) {
       SeyirApp.tokenNotifier.value = val;
     });
@@ -206,12 +208,12 @@ class _NavBarState extends State<NavBar> {
             ),
             ListTile(
               leading: Icon(
-                CupertinoIcons.news,
+                CupertinoIcons.settings,
                 size: 24,
                 color: Theme.of(context).colorScheme.secondary,
               ),
               title: Text(
-                'Elin harytlar',
+                'Awto şaýlary',
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontFamily: "Bricolage",
@@ -219,43 +221,7 @@ class _NavBarState extends State<NavBar> {
                 ),
               ),
               onTap: () {
-                Navigator.pushNamed(context, '/elin');
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                CupertinoIcons.news,
-                size: 24,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-              title: Text(
-                'Beýlekiler',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontFamily: "Bricolage",
-                  fontSize: 14,
-                ),
-              ),
-              onTap: () {
-                Navigator.pushNamed(context, '/other');
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                CupertinoIcons.news,
-                size: 24,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-              title: Text(
-                'Täze habarlar',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontFamily: "Bricolage",
-                  fontSize: 14,
-                ),
-              ),
-              onTap: () {
-                Navigator.pushNamed(context, '/news');
+                Navigator.pushNamed(context, '/spare');
               },
             ),
             ListTile(

@@ -3,6 +3,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:seyir/pages/lists/main_list.dart';
 import 'package:seyir/pages/logist/logistaddress.dart';
 import 'package:seyir/pages/logist/logistcategory.dart';
 import 'package:seyir/pages/logist/logistmain_list.dart';
@@ -12,14 +13,14 @@ import '../widgets/fields/text_field_row.dart';
 import '../component/navbar.dart';
 import '../utils/models.dart';
 
-class LogistFilterWidget extends StatefulWidget {
-  const LogistFilterWidget({Key? key}) : super(key: key);
+class ServiceFilterWidget extends StatefulWidget {
+  const ServiceFilterWidget({Key? key}) : super(key: key);
 
   @override
-  _LogistFilterWidgetState createState() => _LogistFilterWidgetState();
+  _ServiceFilterWidgetState createState() => _ServiceFilterWidgetState();
 }
 
-class _LogistFilterWidgetState extends State<LogistFilterWidget>
+class _ServiceFilterWidgetState extends State<ServiceFilterWidget>
     with SingleTickerProviderStateMixin {
   bool _validate = false;
   bool selectedGet = false;
@@ -40,26 +41,6 @@ class _LogistFilterWidgetState extends State<LogistFilterWidget>
   @override
   void initState() {
     super.initState();
-
-    // getAddress()
-    //     .then((addressList) {
-    //       setState(() {
-    //         addresses = addressList;
-    //       });
-    //     })
-    //     .catchError((error) {
-    //       debugPrint(error.toString());
-    //     });
-
-    // getDataCategory('logist')
-    //     .then((categoryList) {
-    //       setState(() {
-    //         categories = categoryList;
-    //       });
-    //     })
-    //     .catchError((error) {
-    //       debugPrint(error.toString());
-    //     });
   }
 
   @override
@@ -290,31 +271,6 @@ class _LogistFilterWidgetState extends State<LogistFilterWidget>
                       ),
 
                       SizedBox(height: h / 84.4),
-                      _buildSwitch(
-                        context: context,
-                        value: selectedGet,
-                        label: 'Alyp gitmelimi',
-                        onChanged: (bool val) {
-                          setState(() {
-                            selectedGet = val;
-                            if (val) selectedBring = false;
-                          });
-                        },
-                      ),
-                      SizedBox(height: h / 84.4),
-                      _buildSwitch(
-                        context: context,
-                        value: selectedBring,
-                        label: 'Getirmelimi',
-                        onChanged: (bool val) {
-                          setState(() {
-                            selectedBring = val;
-                            if (val) selectedGet = false;
-                          });
-                        },
-                      ),
-                      SizedBox(height: h / 84.4),
-
                       // Gözle düwmesi
                       Container(
                         padding: EdgeInsets.only(top: h / 84.4, bottom: 12),
@@ -364,8 +320,11 @@ class _LogistFilterWidgetState extends State<LogistFilterWidget>
                               context,
                               MaterialPageRoute(
                                 builder:
-                                    (context) =>
-                                        LogistMainList(filter: finalFilter),
+                                    (context) => MainList(
+                                      queryName: 'hyzmatlar',
+                                      pageName: 'Hyzmatlar',
+                                      filter: finalFilter,
+                                    ),
                               ),
                             );
                           },

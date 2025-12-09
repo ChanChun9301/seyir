@@ -110,7 +110,10 @@ class _LogistMainListState extends State<LogistMainList>
       body: TabBarView(
         controller: _tabController,
 
-        children: [LogistTabOneList(filter: ''), LogistTabTwoList(filter: '')],
+        children: [
+          LogistTabOneList(filter: widget.filter),
+          LogistTabTwoList(filter: widget.filter),
+        ],
       ),
     );
   }

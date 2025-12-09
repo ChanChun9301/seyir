@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:seyir/component/navbar.dart';
-import 'package:seyir/pages/logist/create_logist.dart';
+// import 'package:seyir/pages/logist/create_logist.dart';
 import 'package:seyir/utils/constants.dart';
 import 'package:seyir/utils/models.dart';
 import 'package:hive/hive.dart';
@@ -16,9 +16,12 @@ class LogistCategoryPage extends StatefulWidget {
 class _LogistCategoryPageState extends State<LogistCategoryPage> {
   late Future<List<LogistCategory>> _categoriesFuture;
   late List<SaylananCategory> selectedCategories;
+  List<SaylananCategory> selectedSubcategories = [];
 
   Future<void> saveSelectedCategories(List<SaylananCategory> list) async {
-    final box = Hive.box<SaylananCategory>('selected_categories');
+    final Box<SaylananCategory> box = Hive.box<SaylananCategory>(
+      'selected_categories',
+    );
     await box.clear();
     for (var item in list) {
       await box.add(item);
@@ -32,13 +35,8 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
     _categoriesFuture = fetchCategories();
   }
 
-  void _save() async {
-    await saveSelectedCategories(selectedCategories);
-    if (!mounted) return;
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => CreateLog()),
-    );
+  void _save() {
+    Navigator.pop(context, selectedCategories);
   }
 
   @override
@@ -129,7 +127,7 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
                             color: Theme.of(context).colorScheme.secondary,
                           ),
                         ),
-                        value: selectedSubcategories.any(
+                        value: selectedCategories.any(
                           (item) => item.id == sub.pk,
                         ),
                         activeColor: Theme.of(context).colorScheme.primary,
@@ -148,11 +146,11 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
                         onChanged: (bool? checked) {
                           setState(() {
                             if (checked == true) {
-                              selectedSubcategories.add(
+                              selectedCategories.add(
                                 SaylananCategory(id: sub.pk, name: sub.name),
                               );
                             } else {
-                              selectedSubcategories.removeWhere(
+                              selectedCategories.removeWhere(
                                 (item) => item.id == sub.pk,
                               );
                             }
@@ -183,7 +181,7 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
 }
 
 Future<List<LogistCategory>> fetchCategories() async {
-  final response = await http.get(Uri.parse('$baseUrl/logistcategory-list/'));
+  final response = await http.get(Uri.parse('$baseUrl/categories/logistika/'));
 
   if (response.statusCode == 200) {
     final List<dynamic> jsonData = json.decode(response.body);

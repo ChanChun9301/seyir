@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import '/utils/models.dart';
 
 Future<DetailModel> getDetailDataApi(String query, String id) async {
-  final response = await http.get(Uri.parse('$baseUrl/$query-list/$id'));
+  final response = await http.get(Uri.parse('$baseUrl/$query/$id'));
   if (response.statusCode == 200) {
     log(response.toString());
     return DetailModel.fromJson(
@@ -75,7 +75,7 @@ Future<DetailModel> getDataApi(String urlName, String id) async {
 
 Future<List<AddressPage>> getAddress() async {
   final response =
-      await http.get(Uri.parse('$baseUrl/address-list/?checked=true'));
+      await http.get(Uri.parse('$baseUrl/addresses/?checked=true'));
   List data = jsonDecode(utf8.decode(response.bodyBytes));
   if (response.statusCode == 200) {
     return data.map((e) => AddressPage.fromJson(e)).toList();
@@ -86,7 +86,7 @@ Future<List<AddressPage>> getAddress() async {
 
 Future<List<CategoryPage>> getDataCategory(String urlName) async {
   final response = await http
-      .get(Uri.parse('$baseUrl/${urlName}category-list/?checked=true'));
+      .get(Uri.parse('$baseUrl/categories/${urlName}/?checked=true'));
   List data = jsonDecode(utf8.decode(response.bodyBytes));
   if (response.statusCode == 200) {
     return data.map((e) => CategoryPage.fromJson(e)).toList();

@@ -45,67 +45,6 @@ class ListAppbar extends StatelessWidget {
             );
           },
         ),
-        PopupMenuButton(
-          color: Theme.of(context).colorScheme.primaryContainer,
-          icon: const Icon(Icons.filter_list),
-          iconSize: 16,
-          tooltip: 'Tertiple',
-          padding: const EdgeInsets.all(2),
-          itemBuilder: (context) {
-            return [
-              PopupMenuItem<int>(
-                value: 0,
-                child: Text(
-                  "Salgylar",
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.secondary,
-                    fontWeight: FontWeight.w400,
-                    fontFamily: 'Bricolage',
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              PopupMenuItem<int>(
-                value: 1,
-                child: Text(
-                  (query == 'logist') ? 'Filter' : "Kategoriýalar",
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.secondary,
-                    fontWeight: FontWeight.w400,
-                    fontFamily: 'Bricolage',
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ];
-          },
-          onSelected: (value) {
-            if (value == 0) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddressList(name: query),
-                ),
-              );
-            } else if (value == 1) {
-              (query == 'logist')
-                  ? Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LogistFilterWidget(),
-                    ),
-                  )
-                  : Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) =>
-                              CategoryList(pageName: titleName, name: query),
-                    ),
-                  );
-            }
-          },
-        ),
       ],
       leading: Builder(
         builder: (BuildContext context) {

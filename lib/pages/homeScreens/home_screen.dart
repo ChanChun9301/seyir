@@ -27,9 +27,6 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
-  final PageController _pageController = PageController(
-    viewportFraction: 1 / 3.5,
-  );
   final CarouselSliderController _carouselController =
       CarouselSliderController();
 
@@ -57,14 +54,13 @@ class HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
-    _pageController.dispose();
     _backButtonTimer?.cancel();
     super.dispose();
   }
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent &&
+            _scrollController.position.maxScrollExtent - 200 &&
         !_isLoading &&
         _hasMore) {
       _loadData();
@@ -100,14 +96,13 @@ class HomeScreenState extends State<HomeScreen> {
     });
 
     await _loadData();
-
     setState(() => _isRefreshing = false);
   }
 
   Future<List<PageModel>> _fetchPageData() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/topmain-list/?checked=True&page=$_currentPage'),
+        Uri.parse('$baseUrl/logistika/?checked=True&page=$_currentPage'),
       );
 
       if (response.statusCode == 200) {
@@ -128,7 +123,10 @@ class HomeScreenState extends State<HomeScreen> {
       return true;
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Yza çykmak üçin ýene bir gezek basyň!')),
+        const SnackBar(
+          content: Text('Ýene bir gezek basyň çykmak üçin!'),
+          duration: Duration(seconds: 2),
+        ),
       );
       _backButtonTimer = Timer(const Duration(seconds: 2), () {
         _backButtonTimer = null;
@@ -141,7 +139,6 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
 
     return WillPopScope(
       onWillPop: _onWillPop,
@@ -150,124 +147,107 @@ class HomeScreenState extends State<HomeScreen> {
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(40),
           child: AppBar(
-            backgroundColor: theme.colorScheme.primary,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             elevation: 10,
             centerTitle: true,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-            ),
-            leading: Builder(
-              builder:
-                  (context) => IconButton(
-                    icon: const Icon(
-                      Icons.sort_outlined,
-                      color: Colors.white,
-                      size: 14,
-                    ),
-                    onPressed: () => Scaffold.of(context).openDrawer(),
-                  ),
-            ),
-            title: const Text(
+            title: Text(
               'Seýir',
-              style: TextStyle(
-                letterSpacing: 2,
-                fontFamily: 'Bricolage',
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+              style: const TextStyle(
                 fontStyle: FontStyle.italic,
+                letterSpacing: 2,
+                fontFamily: "Bricolage",
+                fontSize: 16,
                 color: Colors.white,
               ),
             ),
+            leading: Builder(
+              builder: (BuildContext context) {
+                return IconButton(
+                  icon: const Icon(
+                    Icons.sort_outlined,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                );
+              },
+            ),
+
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+            ),
           ),
         ),
-
-        extendBodyBehindAppBar: true,
         drawer: const NavBar(),
         body: RefreshIndicator(
           onRefresh: _refreshData,
-          child: ListView(
+          backgroundColor: theme.colorScheme.primary,
+          color: Colors.white,
+          child: CustomScrollView(
             controller: _scrollController,
-            children: [
-              Obx(() {
-                final carouselItems = _carouselControl.carouselItems;
-                return Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.fromLTRB(
-                    height / 84.4,
-                    10,
-                    height / 84.4,
-                    0,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(80),
-                  ),
-                  child:
-                      carouselItems.isNotEmpty
-                          ? CarouselSlider(
-                            items:
-                                carouselItems
-                                    .map(
-                                      (e) => Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 2,
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            height / 42.2,
-                                          ),
-                                          child: Image.network(
-                                            e.img,
-                                            fit: BoxFit.cover,
-                                            width: double.infinity,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                            carouselController: _carouselController,
-                            options: CarouselOptions(
-                              scrollPhysics: const BouncingScrollPhysics(),
-                              autoPlay: true,
-                              aspectRatio: 2,
-                              viewportFraction: 1,
-                              onPageChanged: (index, _) {
-                                setState(() => _currentCarouselIndex = index);
-                              },
-                            ),
-                          )
-                          : Image.asset(
-                            'assets/no-image.jpg',
-                            fit: BoxFit.fill,
-                          ),
-                );
-              }),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children:
-                    _carouselControl.carouselItems.asMap().entries.map((entry) {
-                      final idx = entry.key;
-                      return GestureDetector(
-                        onTap: () => _carouselController.animateToPage(idx),
-                        child: Container(
-                          width: _currentCarouselIndex == idx ? 17 : 7,
-                          height: 7,
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(height / 84.4),
-                            color:
-                                _currentCarouselIndex == idx
-                                    ? const Color.fromARGB(255, 161, 93, 83)
-                                    : Colors.teal,
-                          ),
-                        ),
-                      );
-                    }).toList(),
+            slivers: [
+              // === AppBar + Carousel ===
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    const SizedBox(height: kToolbarHeight - 20),
+                    _buildModernCarousel(height, theme),
+                    const SizedBox(height: 16),
+                    _buildCarouselDots(),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
-              SizedBox(height: height / 84.4),
-              _buildCategorySection(width, height, theme),
-              const SizedBox(height: 10),
-              _buildItemList(theme, height),
+
+              // === Categories ===
+              SliverToBoxAdapter(child: _buildModernCategories(theme)),
+              // const SliverToBoxAdapter(   child: SizedBox(height: 24)),
+
+              // === Items List ===
+              _items.isEmpty && !_isLoading
+                  ? SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.inbox_outlined,
+                            size: 64,
+                            color: theme.colorScheme.secondary,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Maglumat ýok',
+                            style: TextStyle(
+                              color: theme.colorScheme.secondary,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                  : SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: SliverList.separated(
+                      itemCount: _items.length + (_hasMore ? 1 : 0),
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        if (index == _items.length) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16),
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
+                        return _buildModernItemCard(_items[index], theme);
+                      },
+                    ),
+                  ),
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
             ],
           ),
         ),
@@ -275,181 +255,400 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategorySection(double width, double height, ThemeData theme) {
-    return Align(
-      child: Container(
-        height: 140,
-        width: width,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: PageView(
-          controller: _pageController,
-          scrollDirection: Axis.horizontal,
-          padEnds: false,
-          children: [
-            _categoryCard(
-              'Logistika',
-              'assets/category/1_main.jpg',
-              LogistMainList(filter: ''),
-            ),
-            _categoryCard(
-              'Awtoulaglar',
-              'assets/category/2_main.jpg',
-              const MainList(pageName: 'Awtoulaglar', queryName: 'car'),
-            ),
-            _categoryCard(
-              'Hyzmatlar',
-              'assets/category/3_main.jpg',
-              const MainList(pageName: 'Hyzmatlar', queryName: 'service'),
-            ),
-            _categoryCard(
-              'Elin',
-              'assets/category/4_main.png',
-              const MainList(pageName: 'Elin hyzmatlar', queryName: 'elin'),
-            ),
-            _categoryCard(
-              'Beylekiler',
-              'assets/category/5_main.jpg',
-              const MainList(pageName: 'Beýlekiler', queryName: 'other'),
-            ),
-            _categoryCard(
-              'Habarlar',
-              'assets/category/6_main.png',
-              const NewsMainList(),
-            ),
-          ],
+  // === КАРУСЕЛЬ ===
+  Widget _buildModernCarousel(double height, ThemeData theme) {
+    return Obx(() {
+      final items = _carouselControl.carouselItems;
+      if (items.isEmpty) {
+        return Container(
+          height: height * 0.25,
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: theme.colorScheme.primaryContainer,
+          ),
+          child: const Center(child: Icon(Icons.image, size: 50)),
+        );
+      }
+
+      return CarouselSlider.builder(
+        itemCount: items.length,
+        carouselController: _carouselController,
+        options: CarouselOptions(
+          height: height * 0.25,
+          autoPlay: true,
+          viewportFraction: 0.88,
+          enlargeCenterPage: true,
+          aspectRatio: 16 / 9,
+          onPageChanged: (i, _) => setState(() => _currentCarouselIndex = i),
         ),
-      ),
-    );
-  }
-
-  Widget _categoryCard(String title, String imagePath, Widget route) {
-    final double marginHorizontal = MediaQuery.of(context).size.width / 30;
-    return InkWell(
-      onTap:
-          () =>
-              Navigator.push(context, MaterialPageRoute(builder: (_) => route)),
-      child: Container(
-        width: 100,
-        // height: 110,
-        // margin: EdgeInsets.symmetric(horizontal: marginHorizontal),
-        padding: const EdgeInsets.only(bottom: 5),
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
-        child: Column(
-          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Image.asset(imagePath, fit: BoxFit.cover, height: 90, width: 100),
-
-            SizedBox(height: 5),
-            CustomText(
-              removeHtmlTags(title),
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildItemList(ThemeData theme, double height) {
-    if (_items.isEmpty) {
-      return SizedBox(
-        height: height / 1.8,
-        child: Center(
-          child:
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text('Maglumat ýok'),
-        ),
-      );
-    }
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(8),
-      itemCount: _items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final item = _items[index];
-        return InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) => TopDetailPage(id: item.id, title: item.title),
-              ),
-            );
-          },
-
-          child: Container(
-            width: width(context),
+        itemBuilder: (context, index, _) {
+          final item = items[index];
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 6),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 6,
-                  offset: Offset(0, 3),
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
                 ),
               ],
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.network(
                     item.img,
-                    width: 100,
-                    height: 90,
                     fit: BoxFit.cover,
                     errorBuilder:
-                        (context, error, stackTrace) =>
-                            const Icon(Icons.image_not_supported, size: 50),
+                        (_, __, ___) => Image.asset(
+                          'assets/no-image.jpg',
+                          fit: BoxFit.cover,
+                        ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.only(
-                      top: 5,
-                      right: 10,
-                      // bottom: 10,
-                    ), // own padding
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CustomText(
-                          removeHtmlTags(item.title),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14, // biraz uly etmek has okalýar
-                          maxLines: 1, // bir setirde görkezmek üçin
-                          overflow: TextOverflow.ellipsis,
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                        const SizedBox(height: 4),
-                        CustomText(
-                          removeHtmlTags(item.desc),
-                          fontSize: 12,
-                          maxLines: 2,
-                          color: Theme.of(context).colorScheme.secondary,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [Colors.black87, Colors.transparent],
+                      ),
                     ),
                   ),
+                  Positioned(
+                    bottom: 12,
+                    left: 12,
+                    right: 12,
+                    child: Text(
+                      removeHtmlTags(item.name ?? ''),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        shadows: [Shadow(blurRadius: 6, color: Colors.black54)],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  // === ТОЧКИ КАРУСЕЛИ ===
+  Widget _buildCarouselDots() {
+    return Obx(() {
+      final items = _carouselControl.carouselItems;
+      if (items.isEmpty) return const SizedBox();
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children:
+            items.asMap().entries.map((e) {
+              final idx = e.key;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: _currentCarouselIndex == idx ? 24 : 8,
+                height: 8,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color:
+                      _currentCarouselIndex == idx
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(
+                            context,
+                          ).colorScheme.outline.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(4),
                 ),
-              ],
+              );
+            }).toList(),
+      );
+    });
+  }
+
+  // === КАТЕГОРИИ ===
+  Widget _buildModernCategories(ThemeData theme) {
+    final categories = [
+      _cat(
+        'Logistika',
+        'assets/category/1_main.jpg',
+        LogistMainList(filter: ''),
+      ),
+      _cat(
+        'Awtoulaglar',
+        'assets/category/2_main.jpg',
+        MainList(pageName: 'Awtoulaglar', queryName: 'car', filter: ''),
+      ),
+      _cat(
+        'Awto şaýlary',
+        'assets/category/6_main.png',
+        MainList(pageName: 'Awto şaýlary', filter: '', queryName: 'spares'),
+      ),
+      _cat(
+        'Hyzmatlar',
+        'assets/category/3_main.jpg',
+        MainList(pageName: 'Hyzmatlar', filter: '', queryName: 'hyzmatlar'),
+      ),
+    ];
+
+    return Container(
+      height: 140,
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children:
+            categories.map((cat) {
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => cat['route']),
+                  );
+                },
+                child: Container(
+                  width: 110,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: theme.colorScheme.primaryContainer,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(20),
+                        ),
+                        child: Image.asset(
+                          cat['image'],
+                          height: 90,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          cat['title'],
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: theme.colorScheme.secondary,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+      ),
+      // ListView.builder(
+      //   padding: const EdgeInsets.symmetric(horizontal: 16),
+      //   scrollDirection: Axis.horizontal,
+
+      //   itemCount: categories.length,
+      //   itemBuilder:
+      //       (context, i) => Center(
+      //         child: Padding(
+      //           padding: const EdgeInsets.only(right: 20),
+      //           child: _buildCategoryCard(categories[i], theme),
+      //         ),
+      //       ),
+      // ),
+    );
+  }
+
+  // Widget _buildCategoryCard(Map<String, dynamic> cat, ThemeData theme) {
+  //   return InkWell(
+  //     borderRadius: BorderRadius.circular(20),
+  //     onTap:
+  //         () => Navigator.push(
+  //           context,
+  //           MaterialPageRoute(builder: (_) => cat['route']),
+  //         ),
+  //     child: Container(
+  //       width: 110,
+  //       decoration: BoxDecoration(
+  //         borderRadius: BorderRadius.circular(20),
+  //         color: theme.colorScheme.primaryContainer,
+  //         boxShadow: [
+  //           BoxShadow(
+  //             color: Colors.black12,
+  //             blurRadius: 8,
+  //             offset: const Offset(0, 4),
+  //           ),
+  //         ],
+  //       ),
+  //       child: Column(
+  //         children: [
+  //           ClipRRect(
+  //             borderRadius: const BorderRadius.vertical(
+  //               top: Radius.circular(20),
+  //             ),
+  //             child: Image.asset(
+  //               cat['image'],
+  //               height: 90,
+  //               width: double.infinity,
+  //               fit: BoxFit.cover,
+  //             ),
+  //           ),
+  //           Padding(
+  //             padding: const EdgeInsets.all(8),
+  //             child: Text(
+  //               cat['title'],
+  //               style: TextStyle(
+  //                 fontWeight: FontWeight.bold,
+  //                 fontSize: 12,
+  //                 color: theme.colorScheme.secondary,
+  //               ),
+  //               textAlign: TextAlign.center,
+  //               maxLines: 2,
+  //               overflow: TextOverflow.ellipsis,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  Map<String, dynamic> _cat(String title, String img, Widget route) => {
+    'title': title,
+    'image': img,
+    'route': route,
+  };
+
+  // === КАРТОЧКА ЭЛЕМЕНТА ===
+  Widget _buildModernItemCard(PageModel item, ThemeData theme) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap:
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => TopDetailPage(id: item.id, title: item.title),
             ),
           ),
-        );
-      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Hero(
+              tag: 'item-${item.id}',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  item.img,
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                  errorBuilder:
+                      (_, __, ___) => Container(
+                        color: theme.colorScheme.surfaceVariant,
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: Colors.grey,
+                        ),
+                      ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    removeHtmlTags(item.title),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    removeHtmlTags(item.desc),
+                    style: TextStyle(
+                      color: theme.colorScheme.secondary,
+                      fontSize: 13,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 14,
+                        color: theme.colorScheme.outline,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatDate(item.created.toString()),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: theme.colorScheme.secondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: theme.colorScheme.outline,
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  String _formatDate(String? date) {
+    if (date == null) return 'Näbelli';
+    try {
+      final d = DateTime.parse(date);
+      final now = DateTime.now();
+      final diff = now.difference(d);
+      if (diff.inDays > 0) return '${diff.inDays} gün öň';
+      if (diff.inHours > 0) return '${diff.inHours} sagat öň';
+      if (diff.inMinutes > 0) return '${diff.inMinutes} minut öň';
+      return 'Şu wagt';
+    } catch (e) {
+      return 'Näbelli';
+    }
   }
 }

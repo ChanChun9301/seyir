@@ -684,7 +684,7 @@ class CarouselPage {
   CarouselPage({required this.pk, required this.name, required this.img});
 
   factory CarouselPage.fromJson(Map<String, dynamic> json) =>
-      CarouselPage(pk: json["pk"], name: json["name"], img: json["img"]);
+      CarouselPage(pk: json["pk"], name: json["name"], img: json["img_url"]);
 
   Map<String, dynamic> toJson() => {"pk": pk, "name": name, "img": img};
 }

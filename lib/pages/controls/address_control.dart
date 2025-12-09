@@ -10,7 +10,7 @@ class AddressControl extends GetxController {
   List<AddressPage> get addressItems => _addressItems.toList();
 
   void fetchAddressItems() async {
-    final response = await http.get(Uri.parse('$baseUrl/address-list/'));
+    final response = await http.get(Uri.parse('$baseUrl/addresses/'));
     final data = json.decode(response.body) as List<dynamic>;
 
     _addressItems.value = data

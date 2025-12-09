@@ -1,6 +1,9 @@
 // ignore_for_file: file_names
 import 'package:flutter/material.dart';
 import 'package:seyir/widgets/circulateContainer.dart';
+import 'package:seyir/widgets/filterWidget_car.dart';
+import 'package:seyir/widgets/filterWidget_service.dart';
+import 'package:seyir/widgets/filterWidget_spares.dart';
 import '/component/listAppbar.dart';
 import '/utils/constants.dart';
 import '../../component/navbar.dart';
@@ -9,12 +12,18 @@ import 'package:http/http.dart' as http;
 import '/utils/models.dart';
 import '../../widgets/text.dart';
 import '../detail_page.dart';
+import '../search_delagate.dart';
 
 class MainList extends StatefulWidget {
   final String? pageName;
   final String? queryName;
-  const MainList({Key? key, required this.pageName, required this.queryName})
-    : super(key: key);
+  String filter = '';
+  MainList({
+    Key? key,
+    required this.pageName,
+    required this.queryName,
+    required this.filter,
+  }) : super(key: key);
   @override
   State<MainList> createState() => _MainListState();
 }
@@ -46,7 +55,7 @@ class _MainListState extends State<MainList>
   Future<void> _loadData() async {
     if (!isLoading) {
       isLoading = true;
-      final newPageModels = await getData(widget.queryName!);
+      final newPageModels = await getData(widget.queryName!, widget.filter);
       setState(() {
         futureDatas.addAll(newPageModels);
       });
@@ -83,174 +92,285 @@ class _MainListState extends State<MainList>
         ),
       ),
       drawer: const NavBar(),
-      extendBodyBehindAppBar: true,
+      // extendBodyBehindAppBar: true,
       body: RefreshIndicator(
         onRefresh: _refreshData,
         child: SingleChildScrollView(
-          child: ListView.builder(
-            controller: control,
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: isLoading ? futureDatas.length + 1 : futureDatas.length,
-            itemBuilder: (context, index) {
-              if (index < futureDatas.length) {
-                return InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => DetailPage(
-                              id: futureDatas[index].id,
-                              query: widget.queryName!,
-                              title: futureDatas[index].title,
-                            ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(height(context) / 84.4),
-                      ),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color.fromRGBO(99, 99, 99, 0.2),
-                          blurRadius: 8,
-                          spreadRadius: 0,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                    ),
-                    margin: EdgeInsets.only(
-                      top: height(context) / 84.4,
-                      left: height(context) / 84.4,
-                      right: height(context) / 84.4,
-                    ),
-                    width: double.infinity,
-                    height: 90,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 150,
-                          height: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(height(context) / 84.4),
-                              bottomLeft: Radius.circular(
-                                height(context) / 84.4,
-                              ),
-                            ),
-                            color: Colors.white38,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        showSearch(
+                          context: context,
+                          delegate: SearchFilter(
+                            urlName: widget.queryName!,
+                            queries: '',
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(height(context) / 84.4),
-                              bottomLeft: Radius.circular(
-                                height(context) / 84.4,
-                              ),
-                            ),
-                            child: Image.network(
-                              (futureDatas[index].img != '')
-                                  ? futureDatas[index].img
-                                  : 'assets/no-image.jpg',
-                              fit: BoxFit.cover,
-                            ),
+                        );
+                      },
+                      icon: Icon(
+                        Icons.search,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                      label: Text(
+                        'Gözle',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          Theme.of(context).colorScheme.primaryContainer,
+                        ),
+                        shape: MaterialStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        Expanded(
-                          child: SizedBox(
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                left: 10,
-                                right: 10,
+                        padding: MaterialStateProperty.all(
+                          const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        if (widget.queryName == 'car') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CarFilterWidget(),
+                            ),
+                          );
+                        } else if (widget.queryName == 'hyzmatlar') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ServiceFilterWidget(),
+                            ),
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SparesFilterWidget(),
+                            ),
+                          );
+                        }
+                      },
+                      icon: Icon(
+                        Icons.sort,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                      label: Text(
+                        'Filter',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          Theme.of(context).colorScheme.primaryContainer,
+                        ),
+                        shape: MaterialStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        padding: MaterialStateProperty.all(
+                          const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              ListView.builder(
+                controller: control,
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount:
+                    isLoading ? futureDatas.length + 1 : futureDatas.length,
+                itemBuilder: (context, index) {
+                  if (index < futureDatas.length) {
+                    return InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => DetailPage(
+                                  id: futureDatas[index].id,
+                                  query: widget.queryName!,
+                                  title: futureDatas[index].title,
+                                ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(height(context) / 84.4),
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color.fromRGBO(99, 99, 99, 0.2),
+                              blurRadius: 8,
+                              spreadRadius: 0,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                        ),
+                        margin: EdgeInsets.only(
+                          top: height(context) / 84.4,
+                          left: height(context) / 84.4,
+                          right: height(context) / 84.4,
+                        ),
+                        width: double.infinity,
+                        height: 90,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 150,
+                              height: double.infinity,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(
+                                    height(context) / 84.4,
+                                  ),
+                                  bottomLeft: Radius.circular(
+                                    height(context) / 84.4,
+                                  ),
+                                ),
+                                color: Colors.white38,
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(
-                                    futureDatas[index].title,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.secondary,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Bricolage',
-                                      fontSize: 14,
-                                    ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(
+                                    height(context) / 84.4,
                                   ),
-                                  Text(
-                                    futureDatas[index].desc,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.onSecondary,
-                                      fontWeight: FontWeight.w400,
-                                      fontFamily: 'Bricolage',
-                                      fontSize: 14,
-                                    ),
+                                  bottomLeft: Radius.circular(
+                                    height(context) / 84.4,
                                   ),
-                                  Row(
+                                ),
+                                child: Image.network(
+                                  (futureDatas[index].img != '')
+                                      ? futureDatas[index].img
+                                      : 'assets/no-image.jpg',
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: SizedBox(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 10,
+                                    right: 10,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      SmallText(
-                                        text:
-                                            futureDatas[index].addressName
-                                                .toString(),
-                                      ),
-                                      SizedBox(
-                                        width: 60,
-                                        child: SmallText(
-                                          text:
-                                              futureDatas[index].categoryName
-                                                  .toString(),
+                                      Text(
+                                        futureDatas[index].title,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.secondary,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Bricolage',
+                                          fontSize: 14,
                                         ),
                                       ),
-                                      SmallText(
-                                        text:
-                                            (futureDatas[index].created
+                                      Text(
+                                        futureDatas[index].desc,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.onSecondary,
+                                          fontWeight: FontWeight.w400,
+                                          fontFamily: 'Bricolage',
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          SmallText(
+                                            text:
+                                                futureDatas[index].addressName
+                                                    .toString(),
+                                          ),
+                                          SizedBox(
+                                            width: 60,
+                                            child: SmallText(
+                                              text:
+                                                  futureDatas[index]
+                                                      .categoryName
+                                                      .toString(),
+                                            ),
+                                          ),
+                                          SmallText(
+                                            text:
+                                                (futureDatas[index].created
+                                                            .toString()
+                                                            .substring(0, 10) ==
+                                                        formattedDate
+                                                            .toString())
+                                                    ? 'Şu gün'
+                                                    : futureDatas[index].created
                                                         .toString()
-                                                        .substring(0, 10) ==
-                                                    formattedDate.toString())
-                                                ? 'Şu gün'
-                                                : futureDatas[index].created
-                                                    .toString()
-                                                    .substring(0, 10),
+                                                        .substring(0, 10),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              } else {
-                return const CircularContainerMain();
-              }
-            },
+                      ),
+                    );
+                  } else {
+                    return const CircularContainerMain();
+                  }
+                },
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Future<List<PageModel>> getData(String urlName) async {
+  Future<List<PageModel>> getData(String urlName, String filter) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/${urlName}main-list/?checked=True&page=$page'),
+      Uri.parse('$baseUrl/$urlName/?checked=True&page=$page$filter'),
     );
     if (response.statusCode == 200) {
       Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));

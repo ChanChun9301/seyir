@@ -10,26 +10,29 @@ import '../../utils/models.dart';
 
 class AddedList extends StatefulWidget {
   const AddedList({Key? key}) : super(key: key);
+
   @override
   State<AddedList> createState() => _AddedListState();
 }
 
-class _AddedListState extends State<AddedList>
-    with SingleTickerProviderStateMixin {
-  late Future<List<PageModel>> futureDatas;
-  final control = ScrollController();
-
+class _AddedListState extends State<AddedList> {
   final _appToken = Hive.box('apptoken');
-  var token = '';
+
+  late Future<String> futureToken;
+
   @override
   void initState() {
     super.initState();
-    setState(() {
-      token = _appToken.get('phone') ?? '';
-    });
+    futureToken = _loadToken();
   }
 
-  int current = 0;
+  Future<String> _loadToken() async {
+    // Имитация асинхронной загрузки, можно убрать await если не нужно
+    await Future.delayed(Duration(milliseconds: 100));
+    final token = _appToken.get('phone')?.toString() ?? '';
+    // Возвращаем безопасный вариант
+    return token.length > 3 ? token.substring(3) : '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +42,6 @@ class _AddedListState extends State<AddedList>
         preferredSize: const Size.fromHeight(40),
         child: AppBar(
           backgroundColor: Theme.of(context).colorScheme.primary,
-          notificationPredicate: (ScrollNotification notification) {
-            return notification.depth == 1;
-          },
           centerTitle: true,
           scrolledUnderElevation: 4.0,
           title: const Text(
@@ -57,14 +57,8 @@ class _AddedListState extends State<AddedList>
           leading: Builder(
             builder: (BuildContext context) {
               return IconButton(
-                icon: const Icon(
-                  Icons.sort_outlined,
-                  color: Colors.white,
-                  size: 16,
-                ),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
+                icon: const Icon(Icons.sort_outlined, color: Colors.white, size: 16),
+                onPressed: () => Scaffold.of(context).openDrawer(),
               );
             },
           ),
@@ -75,15 +69,31 @@ class _AddedListState extends State<AddedList>
       ),
       extendBodyBehindAppBar: true,
       drawer: const NavBar(),
-      body: PageView(
-        children: [
-          AddedLogist(token: token.substring(3)),
-          AddedCarWidget(token: token.substring(3)),
-          AddedServiceWidget(token: token.substring(3)),
-          AddedElinWidget(token: token.substring(3)),
-          AddedOtherWidget(token: token.substring(3)),
-        ],
+      body: FutureBuilder<String>(
+        future: futureToken,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Пока загружаем токен, можно показать спиннер
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            // Если произошла ошибка при загрузке
+            return Center(child: Text('Ошибка загрузки токена'));
+          }
+
+          final safeToken = snapshot.data ?? '';
+
+          return PageView(
+            children: [
+              AddedLogist(token: safeToken),
+              AddedCarWidget(token: safeToken),
+              AddedServiceWidget(token: safeToken),
+              AddedElinWidget(token: safeToken),
+              AddedOtherWidget(token: safeToken),
+            ],
+          );
+        },
       ),
     );
   }
 }
+

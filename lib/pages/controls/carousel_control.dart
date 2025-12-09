@@ -10,7 +10,7 @@ class CarouselControl extends GetxController {
   List<CarouselPage> get carouselItems => _carouselItems.toList();
 
   void fetchCarouselItems() async {
-    final response = await http.get(Uri.parse('$baseUrl/carousel-list/'));
+    final response = await http.get(Uri.parse('$baseUrl/carousel/'));
     final data = json.decode(response.body) as List<dynamic>;
     // print(data);
     if (data.isNotEmpty) {
