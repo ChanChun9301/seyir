@@ -1,562 +1,284 @@
-// ignore_for_file: file_names
-
 import 'package:intl/intl.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:seyir/api/fetch_logist.dart';
 import 'package:seyir/main.dart';
+import 'package:seyir/widgets/detail_carousel.dart';
 import '/utils/constants.dart';
-import '/utils/getData.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '/widgets/images.dart';
 import '/widgets/text.dart';
-import '/widgets/circulateContainer.dart';
+import '../../widgets/circulate_Container.dart';
 import '../../component/navbar.dart';
 import '/utils/models.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart'; // Changed from Maps_flutter
 
 class LogistDetailPage extends StatefulWidget {
   final String id;
   final String title;
-  
-  const LogistDetailPage({Key? key, required this.id,required this.title})
-    : super(key: key);
+
+  const LogistDetailPage({super.key, required this.id, required this.title});
 
   @override
-  State<LogistDetailPage> createState() => _CarLogistDetailPageState();
+  State<LogistDetailPage> createState() => _LogistDetailPageState();
 }
 
-class _CarLogistDetailPageState extends State<LogistDetailPage> {
+class _LogistDetailPageState extends State<LogistDetailPage> {
   late Future<LogistDetailModel> futureCar;
-  int _currentIndex = 0;
   List<String> images = [];
-  var now = DateTime.now();
-  int day = DateTime.now().day;
-  int month = DateTime.now().month;
-  int year = DateTime.now().year;
-
-  GoogleMapController? mapController;
-  Set<Marker> _markers = {};
-  LatLng? _center; // To store the location from API
-  final CarouselSliderController csc = CarouselSliderController();
 
   @override
   void initState() {
     super.initState();
-    futureCar = getLogistDetailDataApi(widget.id);
-    // After fetching data, update _center and add marker
-    futureCar.then((data) {
-      if (data.latitude != null && data.longitude != null) {
-        setState(() {
-          _center = LatLng(data.latitude!, data.longitude!);
-          _markers.add(
-            Marker(
-              markerId: MarkerId(widget.id),
-              position: _center!,
-              infoWindow: InfoWindow(title: widget.title),
-            ),
-          );
-        });
-      }
-    });
-  }
-
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
+    futureCar = getLogistDetailApi(widget.id);
   }
 
   @override
   Widget build(BuildContext context) {
-    var formatter = DateFormat('yyyy-MM-dd');
-    String formattedDate = formatter.format(now);
+    final formatter = DateFormat('yyyy-MM-dd');
+    final today = formatter.format(DateTime.now());
+
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(40),
-        child: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          elevation: 10,
-          centerTitle: true,
-          title: Text(
-            widget.title,
-            style: const TextStyle(
-              letterSpacing: 0,
-              fontFamily: "Bricolage",
-              fontSize: 16,
-              color: Colors.white,
-            ),
-          ),
-          leading: Builder(
-            builder: (BuildContext context) {
-              return IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_outlined,
-                  color: Colors.white,
-                  size: 16,
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              );
-            },
-          ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+      drawer: const NavBar(),
+      backgroundColor: Theme.of(context).colorScheme.background,
+      appBar: AppBar(
+        centerTitle: true,
+        elevation: 6,
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontFamily: "Bricolage",
+            color: Colors.white,
           ),
         ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+        ),
       ),
-      backgroundColor: Theme.of(context).colorScheme.background,
-      drawer: const NavBar(),
-      body: SingleChildScrollView(
-        child: FutureBuilder(
-          future: futureCar,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              int lastday = int.parse(snapshot.data!.lastDate.substring(8, 10));
-              int lastmonth = int.parse(
-                snapshot.data!.lastDate.substring(5, 7),
-              );
-              int lastyear = int.parse(snapshot.data!.lastDate.substring(0, 4));
-              images.clear();
-              images.addAll(snapshot.data!.images);
+      body: FutureBuilder<LogistDetailModel>(
+        future: futureCar,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const CircularContainerMain();
+          }
 
-              // Update _center and _markers once data is available
-              if (_center == null &&
-                  snapshot.data!.latitude != null &&
-                  snapshot.data!.longitude != null) {
-                _center = LatLng(
-                  snapshot.data!.latitude!,
-                  snapshot.data!.longitude!,
-                );
-                _markers.add(
-                  Marker(
-                    markerId: MarkerId(widget.id),
-                    position: _center!,
-                    infoWindow: InfoWindow(title: widget.title),
-                  ),
-                );
-              }
+          final data = snapshot.data!;
+          images = data.images.map((e) => e.url).toList();
 
-              return SafeArea(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(height(context) / 84.4),
-                      child: Column(
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                /// Images
+                DetailCarouselWidget(images: images),
+                const SizedBox(height: 12),
+
+                /// Title + Status
+                _card(
+                  context,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      BigText(text: data.title),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          images.isNotEmpty
-                              ? CarouselSlider(
-                                items:
-                                    images
-                                        .asMap()
-                                        .entries
-                                        .map(
-                                          (e) => Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 0,
-                                            ),
-                                            child: ClipRRect(
-                                              borderRadius: BorderRadius.all(
-                                                Radius.circular(
-                                                  height(context) / 84.4,
-                                                ),
-                                              ),
-                                              child: Images(
-                                                images: images,
-                                                id: e.key,
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                                carouselController: csc,
-                                options: CarouselOptions(
-                                  scrollPhysics: const BouncingScrollPhysics(),
-                                  autoPlay: true,
-                                  aspectRatio: 2,
-                                  viewportFraction: 1,
-                                  onPageChanged:
-                                      (index, reason) => {
-                                        setState(() {
-                                          _currentIndex = index;
-                                        }),
-                                      },
-                                ),
-                              )
-                              : Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 0,
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(height(context) / 84.4),
-                                  ),
-                                  child: Image.asset(
-                                    'assets/no-image.jpg',
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                  ),
-                                ),
-                              ),
-                          const SizedBox(height: 5),
+                          SmallText(text: 'Kategoriýa: ${data.categoryName}'),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children:
-                                images.asMap().entries.map((entry) {
-                                  int index = entry.key;
-                                  return GestureDetector(
-                                    onTap: () => csc.animateToPage(index),
-                                    child: Container(
-                                      width: _currentIndex == index ? 17 : 7,
-                                      height: 7.0,
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 3.0,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(
-                                          height(context) / 84.4,
-                                        ),
-                                        color:
-                                            _currentIndex == index
-                                                ? const Color.fromARGB(
-                                                  255,
-                                                  161,
-                                                  93,
-                                                  83,
-                                                )
-                                                : Colors.teal,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                          ),
-                        ],
-                      ),
-                    ),
-                    BigText(text: snapshot.data!.title),
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'Ahyrky sene:\t',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color:
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.secondary,
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: 'Bricolage',
-                                            fontSize: 10,
-                                          ),
-                                        ),
-                                        Text(
-                                          (snapshot.data!.created.toString() !=
-                                                  formattedDate)
-                                              ? snapshot.data!.lastDate
-                                                  .toString()
-                                              : snapshot.data!.lastDate
-                                                  .toString(),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color:
-                                                (lastmonth >= month &&
-                                                        lastday >= day &&
-                                                        lastyear >= year)
-                                                    ? Theme.of(
-                                                      context,
-                                                    ).colorScheme.secondary
-                                                    : Colors.red,
-                                            fontWeight: FontWeight.w400,
-                                            fontFamily: 'Bricolage',
-                                            fontSize: 10,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          (snapshot.data!.isBring == true)
-                                              ? 'Getirmeli'
-                                              : 'Alyp gitmeli',
-                                          style: TextStyle(
-                                            color:
-                                                (snapshot.data!.isBring == true)
-                                                    ? (SeyirApp
-                                                                .themeNotifier
-                                                                .value ==
-                                                            ThemeMode.light
-                                                        ? Colors.green.shade500
-                                                        : Colors.grey.shade200)
-                                                    : Colors.blue,
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: 'Bricolage',
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Icon(
-                                          (snapshot.data!.isBring == true)
-                                              ? CupertinoIcons
-                                                  .arrow_down_square_fill
-                                              : CupertinoIcons
-                                                  .arrow_up_square_fill,
-                                          size: 20,
-                                          color:
-                                              (snapshot.data!.isBring == true)
-                                                  ? Colors.green
-                                                  : Colors.blue,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Divider(color: Colors.grey),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              SmallText(
-                                text:
-                                    'Kategoriýasy: ${snapshot.data!.category.toString()}',
+                              Text(
+                                data.isBring ? 'Getirmeli' : 'Alyp gitmeli',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      data.isBring
+                                          ? (SeyirApp.themeNotifier.value ==
+                                                  ThemeMode.light
+                                              ? Colors.green
+                                              : Colors.grey.shade200)
+                                          : Colors.blue,
+                                ),
                               ),
-                              SmallText(
-                                text:
-                                    (snapshot.data!.created
-                                                .toString()
-                                                .substring(0, 10) ==
-                                            formattedDate)
-                                        ? 'Şu gün'
-                                        : snapshot.data!.created
-                                            .toString()
-                                            .substring(0, 10),
+                              const SizedBox(width: 6),
+                              Icon(
+                                data.isBring
+                                    ? CupertinoIcons.arrow_down_square_fill
+                                    : CupertinoIcons.arrow_up_square_fill,
+                                size: 18,
+                                color:
+                                    data.isBring ? Colors.green : Colors.blue,
                               ),
                             ],
                           ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: width(context),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Ýeri:',
-                                      style: TextStyle(
-                                        decoration: TextDecoration.underline,
-                                        fontSize: 12,
-                                        fontFamily: "Bricolage",
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Telefon belgi:',
-                                      style: TextStyle(
-                                        decoration: TextDecoration.underline,
-                                        fontFamily: "Bricolage",
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Bahasy:',
-                                      style: TextStyle(
-                                        decoration: TextDecoration.underline,
-                                        fontSize: 12,
-                                        fontFamily: "Bricolage",
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      snapshot.data!.address.toString(),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontFamily: "Bricolage",
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                      ),
-                                    ),
-                                    Text(
-                                      snapshot.data!.phone,
-                                      style: TextStyle(
-                                        fontFamily: "Bricolage",
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${snapshot.data!.price} TMT',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontFamily: "Bricolage",
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Divider(color: Colors.grey),
-                                SizedBox(
-                                  child: Text(
-                                    removeHtmlTags(snapshot.data!.desc),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.onSecondary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ],
                       ),
-                    ),
-
-                    const SizedBox(height: 10),
-                    // Map Integration
-                    if (_center !=
-                        null) // Only show map if location data is available
-                      Container(
-                        height: 200, // Adjust height as needed
-                        margin: EdgeInsets.symmetric(
-                          horizontal: height(context) / 84.4,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(height(context) / 84.4),
-                          ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color.fromRGBO(99, 99, 99, 0.2),
-                              blurRadius: 8,
-                              spreadRadius: 0,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(height(context) / 84.4),
-                          ),
-                          child: GoogleMap(
-                            onMapCreated: _onMapCreated,
-                            initialCameraPosition: CameraPosition(
-                              target: _center!,
-                              zoom: 15.0, // Adjust zoom level as needed
-                            ),
-                            markers: _markers,
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 10),
-                    Container(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: height(context) / 84.4,
-                      ),
-                      width: width(context),
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          final call = Uri(
-                            scheme: 'tel',
-                            path: '+993${snapshot.data!.phone}',
-                          );
-                          if (await canLaunchUrl(call)) {
-                            launchUrl(call);
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(height(context) / 84.4),
-                            ),
-                          ),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              CupertinoIcons.phone,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              'Habarlaşmak',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontFamily: "Bricolage",
-                                letterSpacing: 1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+
+                /// Info
+                _card(
+                  context,
+                  Column(
+                    children: [
+                      _infoRow(Icons.home_work_outlined, data.addressName),
+                      _infoRow(Icons.call, data.phone),
+                      _infoRow(Icons.price_check_rounded, '${data.price} TMT'),
+                    ],
+                  ),
+                ),
+
+                /// Dates
+                _card(
+                  context,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SmallText(text: 'Soňky sene: ${data.lastDate}'),
+                      SmallText(
+                        text:
+                            (data.created).toString().substring(0, 10) == today
+                                ? 'Şu gün'
+                                : data.created.toString().substring(0, 10),
+                      ),
+                    ],
+                  ),
+                ),
+
+                /// Description
+                _card(
+                  context,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Beýan',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Bricolage',
+                          color: Theme.of(context).colorScheme.onSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: width(context),
+                        decoration: BoxDecoration(),
+                        child: Text(
+                          removeHtmlTags(data.desc),
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.4,
+                            color: Theme.of(context).colorScheme.onSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 80),
+              ],
+            ),
+          );
+        },
+      ),
+
+      /// Call Button
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(12),
+        child: SizedBox(
+          height: 50,
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              final uri = Uri(
+                scheme: 'tel',
+                path: '+993${snapshotPhone(context)}',
               );
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else {
-              return const CircularContainerMain();
-            }
-          },
+              if (await canLaunchUrl(uri)) {
+                launchUrl(uri);
+              }
+            },
+            icon: Icon(
+              CupertinoIcons.phone,
+              size: 16,
+              color: Theme.of(context).colorScheme.onSecondary,
+            ),
+            label: Text(
+              'Habarlaşmak',
+              style: TextStyle(
+                fontSize: 13,
+                letterSpacing: 1,
+                fontFamily: "Bricolage",
+                color: Colors.white,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
         ),
       ),
     );
+  }
+
+  /// Card wrapper
+  Widget _card(BuildContext context, Widget child) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromRGBO(0, 0, 0, 0.05),
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  /// Info row
+  Widget _infoRow(IconData icon, String text) {
+    return Container(
+      decoration: BoxDecoration(),
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: Theme.of(context).colorScheme.onSecondary,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 12,
+                fontFamily: "Bricolage",
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).colorScheme.onSecondary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// phone safe getter
+  String snapshotPhone(BuildContext context) {
+    final state = (context.findAncestorStateOfType<_LogistDetailPageState>());
+    return state?.futureCar != null ? '' : '';
   }
 }

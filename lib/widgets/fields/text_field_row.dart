@@ -18,16 +18,16 @@ class TextFieldRowCustom extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         boxShadow: [
-          BoxShadow(
-            color: Color.fromRGBO(99, 99, 99, 0.2),
-            blurRadius: 8,
-            spreadRadius: 0,
-            offset: Offset(0, 2),
-          ),
+          // BoxShadow(
+          //   color: Color.fromRGBO(99, 99, 99, 0.2),
+          //   blurRadius: 8,
+          //   spreadRadius: 0,
+          //   offset: Offset(0, 2),
+          // ),
         ],
       ),
       width: w / 2.2,
-      height: 30,
+      height: 50,
       child: TextField(
         controller: ctr,
         maxLines: 1,

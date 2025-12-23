@@ -21,14 +21,11 @@ class WelcomeScreenState extends State<WelcomeScreen>
   late Animation<double> _scaleAnimation;
 
   void check() async {
-    final controller = Get.put<TokenControl>(TokenControl());
+    final controller = Get.find<TokenControl>(); // получаем созданный в main
+
     fetchedToken = controller.fetchTokenItems();
     fetchedToken.then((val) {
       SeyirApp.tokenNotifier.value = val;
-    }).catchError((error) {
-      // Handle token fetch error in UI if needed
-      print("Error fetching token: $error");
-      // Optionally set a state to show an error message
     });
   }
 
@@ -39,9 +36,10 @@ class WelcomeScreenState extends State<WelcomeScreen>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     )..forward();
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     check();
     checkInternetConnectivity();
   }
@@ -55,8 +53,9 @@ class WelcomeScreenState extends State<WelcomeScreen>
   Future<void> checkInternetConnectivity() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     setState(() {
-      isConnected = (connectivityResult == ConnectivityResult.mobile ||
-          connectivityResult == ConnectivityResult.wifi);
+      isConnected =
+          (connectivityResult == ConnectivityResult.mobile ||
+              connectivityResult == ConnectivityResult.wifi);
     });
 
     if (!isConnected) {

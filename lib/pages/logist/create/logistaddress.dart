@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:seyir/api/fetch_logist.dart';
 import 'package:seyir/component/navbar.dart';
+import 'package:seyir/pages/logist/create/create_logist.dart';
 import 'package:seyir/utils/constants.dart';
 import 'package:seyir/utils/models.dart';
-import 'package:hive/hive.dart';
-
 
 class LogistAddressPage extends StatefulWidget {
   const LogistAddressPage({super.key});
@@ -15,35 +13,24 @@ class LogistAddressPage extends StatefulWidget {
 
 class _LogistAddressPageState extends State<LogistAddressPage> {
   late Future<List<AddressPage>> _addressesFuture;
-  late List<SaylananSalgy> selectedSubaddresses;
-
-  Future<void> saveSelectedAddresses(List<SaylananSalgy> list) async {
-    final box = Hive.box<SaylananSalgy>('selected_addresses');
-    await box.clear();
-    for (var item in list) {
-      await box.add(item);
-    }
-  }
+  List<SaylananSalgy> selectedSubaddresses = [];
 
   @override
   void initState() {
     super.initState();
-    selectedSubaddresses = [];
     _addressesFuture = fetchAddress();
   }
 
   void _save() async {
-    final box = Hive.box<SaylananSalgy>('selected_addresses');
-    await box.clear();
-    for (var item in selectedSubaddresses) {
-      await box.add(item);
-    }
+    if (!mounted) return;
+    // Возвращаем выбранные адреса на предыдущий экран
+    Navigator.pop(context, selectedSubaddresses);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(40),
         child: AppBar(
@@ -108,20 +95,16 @@ class _LogistAddressPageState extends State<LogistAddressPage> {
                     color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
-                shape: RoundedRectangleBorder(
-                  side: BorderSide.none, // Açylan ýagdaýda hem border ýok
-                ),
-                // backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                backgroundColor: Colors.transparent, // Arkafon reňki göni
+                shape: RoundedRectangleBorder(side: BorderSide.none),
+                backgroundColor: Colors.transparent,
                 collapsedBackgroundColor: Colors.transparent,
-                collapsedShape: RoundedRectangleBorder(
-                  side: BorderSide.none, // Çökelen ýagdaýda border ýok
-                ),
+                collapsedShape: RoundedRectangleBorder(side: BorderSide.none),
                 children:
                     address.subaddresses.map((sub) {
                       final isSelected = selectedSubaddresses.any(
-                        (item) => item.id.toString() == sub.id,
+                        (item) => item.id == int.parse(sub.id),
                       );
+
                       return CheckboxListTile(
                         title: Text(
                           sub.title,
@@ -133,32 +116,34 @@ class _LogistAddressPageState extends State<LogistAddressPage> {
                         ),
                         value: isSelected,
                         activeColor: Theme.of(context).colorScheme.primary,
-                        fillColor: WidgetStateProperty.resolveWith<Color>((
-                          Set<WidgetState> states,
+                        fillColor: MaterialStateProperty.resolveWith<Color>((
+                          Set<MaterialState> states,
                         ) {
-                          if (states.contains(WidgetState.selected)) {
-                            return Theme.of(context)
-                                .colorScheme
-                                .primary; // seçilen ýagdaýda ikon reňki
+                          if (states.contains(MaterialState.selected)) {
+                            return Theme.of(context).colorScheme.primary;
                           }
-                          return Colors.grey; // saýlanmadyk ýagdaýda ikon reňki
+                          return Colors.grey;
                         }),
                         checkColor: Colors.white,
-
-                        onChanged: (bool? checked) {
+                        controlAffinity: ListTileControlAffinity.leading,
+                        onChanged: (val) {
                           setState(() {
-                            if (checked == true) {
-                              selectedSubaddresses.add(
-                                SaylananSalgy(id:int.parse(sub.id), name: sub.title),
-                              );
+                            if (val == true) {
+                              if (!isSelected) {
+                                selectedSubaddresses.add(
+                                  SaylananSalgy(
+                                    id: int.parse(sub.id),
+                                    name: sub.title,
+                                  ),
+                                );
+                              }
                             } else {
                               selectedSubaddresses.removeWhere(
-                                (item) => item.id == sub.id,
+                                (item) => item.id == int.parse(sub.id),
                               );
                             }
                           });
                         },
-                        controlAffinity: ListTileControlAffinity.leading,
                       );
                     }).toList(),
               );
@@ -167,11 +152,7 @@ class _LogistAddressPageState extends State<LogistAddressPage> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          _save;
-          // if (!mounted) return;
-          Navigator.pop(context);
-        },
+        onPressed: selectedSubaddresses.isEmpty ? null : _save,
         label: Text(
           "Ýatda sakla",
           style: TextStyle(
@@ -182,17 +163,7 @@ class _LogistAddressPageState extends State<LogistAddressPage> {
         ),
         icon: const Icon(Icons.check),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
-  }
-}
-
-Future<List<AddressPage>> fetchAddress() async {
-  final response = await http.get(Uri.parse('$baseUrl/address-list/'));
-
-  if (response.statusCode == 200) {
-    final List<dynamic> jsonData = json.decode(response.body);
-    return jsonData.map((e) => AddressPage.fromJson(e)).toList();
-  } else {
-    throw Exception('Kategoriýalar ýükläp bolmady');
   }
 }

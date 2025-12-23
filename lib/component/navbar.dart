@@ -24,7 +24,6 @@ class _NavBarState extends State<NavBar> {
   void check() async {
     final controller = Get.put<TokenControl>(TokenControl());
     fetchedToken = controller.fetchTokenItems();
-    log('!!! TOKEN-naýbar:' + SeyirApp.tokenNotifier.value.toString());
     fetchedToken.then((val) {
       SeyirApp.tokenNotifier.value = val;
     });

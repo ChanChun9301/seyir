@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:seyir/component/navbar.dart';
-// import 'package:seyir/pages/logist/create_logist.dart';
 import 'package:seyir/utils/constants.dart';
 import 'package:seyir/utils/models.dart';
 import 'package:hive/hive.dart';
+import 'package:seyir/pages/logist/filterWidget.dart';
 
 class LogistCategoryPage extends StatefulWidget {
-  const LogistCategoryPage({Key? key}) : super(key: key);
+  const LogistCategoryPage({super.key});
   @override
   State<LogistCategoryPage> createState() => _LogistCategoryPageState();
 }
@@ -16,13 +16,12 @@ class LogistCategoryPage extends StatefulWidget {
 class _LogistCategoryPageState extends State<LogistCategoryPage> {
   late Future<List<LogistCategory>> _categoriesFuture;
   late List<SaylananCategory> selectedCategories;
-  List<SaylananCategory> selectedSubcategories = [];
 
   Future<void> saveSelectedCategories(List<SaylananCategory> list) async {
-    final Box<SaylananCategory> box = Hive.box<SaylananCategory>(
-      'selected_categories',
-    );
+    final box = await Hive.openBox<SaylananCategory>('selected_categories');
+
     await box.clear();
+
     for (var item in list) {
       await box.add(item);
     }
@@ -35,14 +34,21 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
     _categoriesFuture = fetchCategories();
   }
 
-  void _save() {
-    Navigator.pop(context, selectedCategories);
+  void _save() async {
+    await saveSelectedCategories(selectedCategories);
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LogistFilterWidget(categories: [], client: ''),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(40),
         child: AppBar(
@@ -127,14 +133,14 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
                             color: Theme.of(context).colorScheme.secondary,
                           ),
                         ),
-                        value: selectedCategories.any(
+                        value: selectedSubcategories.any(
                           (item) => item.id == sub.pk,
                         ),
                         activeColor: Theme.of(context).colorScheme.primary,
-                        fillColor: MaterialStateProperty.resolveWith<Color>((
-                          Set<MaterialState> states,
+                        fillColor: WidgetStateProperty.resolveWith<Color>((
+                          Set<WidgetState> states,
                         ) {
-                          if (states.contains(MaterialState.selected)) {
+                          if (states.contains(WidgetState.selected)) {
                             return Theme.of(context)
                                 .colorScheme
                                 .primary; // seçilen ýagdaýda ikon reňki
@@ -146,11 +152,11 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
                         onChanged: (bool? checked) {
                           setState(() {
                             if (checked == true) {
-                              selectedCategories.add(
+                              selectedSubcategories.add(
                                 SaylananCategory(id: sub.pk, name: sub.name),
                               );
                             } else {
-                              selectedCategories.removeWhere(
+                              selectedSubcategories.removeWhere(
                                 (item) => item.id == sub.pk,
                               );
                             }
@@ -181,7 +187,7 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
 }
 
 Future<List<LogistCategory>> fetchCategories() async {
-  final response = await http.get(Uri.parse('$baseUrl/categories/logistika/'));
+  final response = await http.get(Uri.parse('$baseUrl/logistcategory-list/'));
 
   if (response.statusCode == 200) {
     final List<dynamic> jsonData = json.decode(response.body);

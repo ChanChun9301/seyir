@@ -11,7 +11,8 @@ Future<DetailModel> getDetailDataApi(String query, String id) async {
   if (response.statusCode == 200) {
     log(response.toString());
     return DetailModel.fromJson(
-        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>);
+      jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>,
+    );
   } else {
     throw Exception('Failed to load detail data');
   }
@@ -32,18 +33,20 @@ Future<http.Response> deleteData(String query, String id) async {
 }
 
 Future<LogistDetailModel> getLogistDetailDataApi(String id) async {
-  final response = await http.get(Uri.parse('$baseUrl/logist-list/$id'));
+  final response = await http.get(Uri.parse('$baseUrl/logistika/$id'));
   if (response.statusCode == 200) {
     return LogistDetailModel.fromJson(
-        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>);
+      jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>,
+    );
   } else {
     throw Exception('Failed to load album');
   }
 }
 
 Future<List<LogistPageModel>> getLogistData(String filter) async {
-  final response = await http
-      .get(Uri.parse('$baseUrl/logistmain-list/?checked=True$filter'));
+  final response = await http.get(
+    Uri.parse('$baseUrl/logistmain-list/?checked=True$filter'),
+  );
   Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
   List results = data['results'];
   if (response.statusCode == 200) {
@@ -54,10 +57,11 @@ Future<List<LogistPageModel>> getLogistData(String filter) async {
 }
 
 Future<DetailModel> getTopDetailDataApi(String id) async {
-  final response = await http.get(Uri.parse('$baseUrl/topmain-list/$id'));
+  final response = await http.get(Uri.parse('$baseUrl/top-products/$id'));
   if (response.statusCode == 200) {
     return DetailModel.fromJson(
-        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>);
+      jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>,
+    );
   } else {
     throw Exception('Failed to load album');
   }
@@ -67,15 +71,17 @@ Future<DetailModel> getDataApi(String urlName, String id) async {
   final response = await http.get(Uri.parse('$baseUrl/$urlName-list/$id'));
   if (response.statusCode == 200) {
     return DetailModel.fromJson(
-        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>);
+      jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>,
+    );
   } else {
     throw Exception('Failed to load album');
   }
 }
 
 Future<List<AddressPage>> getAddress() async {
-  final response =
-      await http.get(Uri.parse('$baseUrl/addresses/?checked=true'));
+  final response = await http.get(
+    Uri.parse('$baseUrl/addresses/?checked=true'),
+  );
   List data = jsonDecode(utf8.decode(response.bodyBytes));
   if (response.statusCode == 200) {
     return data.map((e) => AddressPage.fromJson(e)).toList();
@@ -85,8 +91,9 @@ Future<List<AddressPage>> getAddress() async {
 }
 
 Future<List<CategoryPage>> getDataCategory(String urlName) async {
-  final response = await http
-      .get(Uri.parse('$baseUrl/categories/${urlName}/?checked=true'));
+  final response = await http.get(
+    Uri.parse('$baseUrl/categories/${urlName}/?checked=true'),
+  );
   List data = jsonDecode(utf8.decode(response.bodyBytes));
   if (response.statusCode == 200) {
     return data.map((e) => CategoryPage.fromJson(e)).toList();
@@ -97,8 +104,9 @@ Future<List<CategoryPage>> getDataCategory(String urlName) async {
 
 Future<List<NewsPage>> getDataNews() async {
   try {
-    final response =
-        await http.get(Uri.parse('$baseUrl/news-list/?checked=true'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/news-list/?checked=true'),
+    );
     Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
     List results = data['results'];
     if (response.statusCode == 200) {
@@ -112,9 +120,13 @@ Future<List<NewsPage>> getDataNews() async {
 }
 
 Future<List<PageModel>> getFilterData(
-    String pageName, String url, String name) async {
+  String pageName,
+  String url,
+  String name,
+) async {
   final response = await http.get(
-      Uri.parse('$baseUrl/$pageName-by-$url-list/?search=$name&checked=true'));
+    Uri.parse('$baseUrl/$pageName-by-$url-list/?search=$name&checked=true'),
+  );
   Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
   List results = data['results'];
   if (response.statusCode == 200) {
@@ -125,9 +137,12 @@ Future<List<PageModel>> getFilterData(
 }
 
 Future<List<LogistPageModel>> getFilterLogistData(
-    String url, String name) async {
+  String url,
+  String name,
+) async {
   final response = await http.get(
-      Uri.parse('$baseUrl/logist-by-$url-list/?search=$name&checked=true'));
+    Uri.parse('$baseUrl/logist-by-$url-list/?search=$name&checked=true'),
+  );
   Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
   List results = data['results'];
   if (response.statusCode == 200) {
@@ -141,8 +156,9 @@ Future<bool> getTokenApi(String token) async {
   final appToken = Hive.box('apptoken');
   var token = appToken.get('token');
 
-  final response =
-      await http.get(Uri.parse('$baseUrl/user-check/?author=$token'));
+  final response = await http.get(
+    Uri.parse('$baseUrl/user-check/?author=$token'),
+  );
   if (response.statusCode == 200) {
     final data = json.decode(response.body);
     if (data['token'] == true) {

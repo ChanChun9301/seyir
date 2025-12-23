@@ -5,13 +5,18 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import '/utils/constants.dart';
 
-
 class TokenControl extends GetxController {
   String? token;
 
   Future<void> saveToken(String value) async {
     token = value;
     await Hive.box('apptoken').put('token', value);
+    log('Token saved: $token');
+  }
+
+  Future<void> savePhone(String value) async {
+    token = value;
+    await Hive.box('apptoken').put('phone', value);
     log('Token saved: $token');
   }
 
@@ -22,30 +27,49 @@ class TokenControl extends GetxController {
   }
 
   Future<bool> fetchTokenItems() async {
+    log("⚡ fetchTokenItems CALLED!");
+
     final box = Hive.box('apptoken');
     final storedToken = box.get('token') as String?;
     final phone = box.get('phone') as String?;
 
-    if (storedToken == null || phone == null) return false;
+    log("storedToken = $storedToken");
+    log("phone = $phone");
+
+    if (storedToken == null || phone == null) {
+      log("❌ storedToken or phone is NULL");
+      return false;
+    }
+
+    final url =
+        '$baseUrl/user-check/?author=$phone';
+    log("❌ Exception: $url");
+
+    log("📤 Sending request to: $url");
 
     try {
-      final response = await http.get(
-        Uri.parse(
-          '$baseUrl/user-check/?author=${phone.substring(3)}&token=$storedToken',
-        ),
-      );
-      log('response.statusCode:' + response.statusCode.toString());
+      final response = await http.get(Uri.parse(url));
+
+      log("🟢 Response received");
+      log("Status: ${response.statusCode}");
+      log("Body: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        log("Decoded JSON: $data");
+
         if (data['token'] == true) {
           token = storedToken;
-          log('Token is valid.');
+          log("✅ Token is valid");
           return true;
+        } else {
+          log("❌ Token invalid in JSON");
         }
+      } else {
+        log("❌ Status != 200");
       }
     } catch (e) {
-      log('Error verifying token: $e');
+      log("❌ Exception: $e");
     }
 
     token = null;

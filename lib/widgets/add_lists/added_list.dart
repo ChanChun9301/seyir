@@ -31,7 +31,7 @@ class _AddedListState extends State<AddedList> {
     await Future.delayed(Duration(milliseconds: 100));
     final token = _appToken.get('phone')?.toString() ?? '';
     // Возвращаем безопасный вариант
-    return token.length > 3 ? token.substring(3) : '';
+    return token.length > 3 ? token : '';
   }
 
   @override
@@ -57,7 +57,11 @@ class _AddedListState extends State<AddedList> {
           leading: Builder(
             builder: (BuildContext context) {
               return IconButton(
-                icon: const Icon(Icons.sort_outlined, color: Colors.white, size: 16),
+                icon: const Icon(
+                  Icons.sort_outlined,
+                  color: Colors.white,
+                  size: 16,
+                ),
                 onPressed: () => Scaffold.of(context).openDrawer(),
               );
             },
@@ -96,4 +100,3 @@ class _AddedListState extends State<AddedList> {
     );
   }
 }
-

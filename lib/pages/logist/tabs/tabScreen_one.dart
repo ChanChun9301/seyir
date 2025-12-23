@@ -7,7 +7,7 @@ import 'package:seyir/main.dart';
 import 'package:seyir/pages/logist/detail_page_logist.dart';
 import 'package:seyir/pages/logist/logist_search_delagate.dart';
 import 'package:seyir/widgets/circulateContainer.dart';
-import 'package:seyir/widgets/filterWidget.dart';
+import '../filterWidget.dart';
 import '/component/listAppbar.dart';
 import '/utils/constants.dart';
 import '../../../component/navbar.dart';
@@ -19,14 +19,14 @@ import '../../../widgets/text.dart';
 // ignore: must_be_immutable
 class LogistTabOneList extends StatefulWidget {
   String filter = '';
-  LogistTabOneList({Key? key, required this.filter}) : super(key: key);
+  LogistTabOneList({super.key, required this.filter});
   @override
   State<LogistTabOneList> createState() => _LogistTabOneListState();
 }
 
 class _LogistTabOneListState extends State<LogistTabOneList>
     with SingleTickerProviderStateMixin {
-  late List<LogistCarPageModel> futureDatas = [];
+  late List<LogistPageModel> futureDatas = [];
   final control = ScrollController();
   late TabController _tabController;
 
@@ -112,15 +112,15 @@ class _LogistTabOneListState extends State<LogistTabOneList>
                       ),
                     ),
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
+                      backgroundColor: WidgetStateProperty.all(
                         Theme.of(context).colorScheme.primaryContainer,
                       ),
-                      shape: MaterialStateProperty.all(
+                      shape: WidgetStateProperty.all(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      padding: MaterialStateProperty.all(
+                      padding: WidgetStateProperty.all(
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       ),
                     ),
@@ -133,7 +133,11 @@ class _LogistTabOneListState extends State<LogistTabOneList>
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const LogistFilterWidget(),
+                          builder:
+                              (context) => const LogistFilterWidget(
+                                client: '',
+                                categories: [],
+                              ),
                         ),
                       );
                     },
@@ -148,15 +152,15 @@ class _LogistTabOneListState extends State<LogistTabOneList>
                       ),
                     ),
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
+                      backgroundColor: WidgetStateProperty.all(
                         Theme.of(context).colorScheme.primaryContainer,
                       ),
-                      shape: MaterialStateProperty.all(
+                      shape: WidgetStateProperty.all(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      padding: MaterialStateProperty.all(
+                      padding: WidgetStateProperty.all(
                         const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 12,
@@ -175,147 +179,9 @@ class _LogistTabOneListState extends State<LogistTabOneList>
                   isLoading ? futureDatas.length + 1 : futureDatas.length,
               itemBuilder: (context, index) {
                 if (index < futureDatas.length) {
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => LogistDetailPage(
-                                id: futureDatas[index].id,
-                                title: futureDatas[index].title,
-                              ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(height(context) / 84.4),
-                        ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color.fromRGBO(99, 99, 99, 0.2),
-                            blurRadius: 8,
-                            spreadRadius: 0,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                      margin: EdgeInsets.only(
-                        left: height(context) / 84.4,
-                        right: height(context) / 84.4,
-                      ),
-                      width: double.infinity,
-                      height: 85,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 110,
-                            height: double.infinity,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(
-                                  height(context) / 84.4,
-                                ),
-                                bottomLeft: Radius.circular(
-                                  height(context) / 84.4,
-                                ),
-                              ),
-                              color: Colors.white38,
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(
-                                  height(context) / 84.4,
-                                ),
-                                bottomLeft: Radius.circular(
-                                  height(context) / 84.4,
-                                ),
-                              ),
-                              child: Image.network(
-                                (futureDatas[index].img != '')
-                                    ? futureDatas[index].img
-                                    : 'assets/no-image.jpg',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: SizedBox(
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 10,
-                                  right: 10,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Text(
-                                      futureDatas[index].title,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.secondary,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Bricolage',
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    Text(
-                                      removeHtmlTags(futureDatas[index].desc),
-
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                        fontWeight: FontWeight.w400,
-                                        fontFamily: 'Bricolage',
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        SizedBox(
-                                          width: 150,
-                                          child: SmallText(
-                                            text:
-                                                futureDatas[index].categoryName
-                                                    .toString(),
-                                          ),
-                                        ),
-                                        SmallText(
-                                          text:
-                                              (futureDatas[index].created
-                                                          .toString()
-                                                          .substring(0, 10) ==
-                                                      formattedDate.toString())
-                                                  ? 'Şu gün'
-                                                  : futureDatas[index].created
-                                                      .toString()
-                                                      .substring(0, 10),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  return buildLogistModernItemCard(
+                    context: context,
+                    item: futureDatas[index],
                   );
                 } else {
                   return const CircularContainerMain();
@@ -328,14 +194,254 @@ class _LogistTabOneListState extends State<LogistTabOneList>
     );
   }
 
-  Future<List<LogistCarPageModel>> getData(String filter) async {
+  Widget buildLogistModernItemCard({
+    required BuildContext context,
+    required LogistPageModel item,
+  }) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => LogistDetailPage(id: item.id, title: item.title),
+          ),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(
+          horizontal: height(context) / 84.4,
+          vertical: 6,
+        ),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Color.fromRGBO(99, 99, 99, 0.18),
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            /// IMAGE
+            Hero(
+              tag: 'logist-two-${item.id}',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  item.img.isNotEmpty ? item.img : 'assets/no-image.jpg',
+                  width: 90,
+                  height: 110,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            /// CONTENT
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// TITLE
+                  Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: theme.colorScheme.secondary,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Bricolage',
+                      fontSize: 13,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  /// DEADLINE + TYPE
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Ahyrky sene:',
+                            style: TextStyle(
+                              color: theme.colorScheme.secondary,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Bricolage',
+                              fontSize: 10,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            item.lastDate,
+                            style: TextStyle(
+                              color:
+                                  _isDateValid(item.lastDate)
+                                      ? theme.colorScheme.secondary
+                                      : Colors.red,
+                              fontFamily: 'Bricolage',
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            item.isBring ? 'Getirmeli' : 'Alyp gitmeli',
+                            style: TextStyle(
+                              color:
+                                  item.isBring
+                                      ? (SeyirApp.themeNotifier.value ==
+                                              ThemeMode.light
+                                          ? Colors.green.shade500
+                                          : Colors.grey.shade200)
+                                      : Colors.blue,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Bricolage',
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            item.isBring
+                                ? CupertinoIcons.arrow_down_square_fill
+                                : CupertinoIcons.arrow_up_square_fill,
+                            size: 18,
+                            color: item.isBring ? Colors.green : Colors.blue,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  /// DESCRIPTION
+                  Text(
+                    removeHtmlTags(item.desc),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSecondary,
+                      fontFamily: 'Bricolage',
+                      fontSize: 10,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  /// FROM
+                  Row(
+                    children: [
+                      Text(
+                        'Nirden:',
+                        style: TextStyle(
+                          color: theme.colorScheme.secondary,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Bricolage',
+                          fontSize: 10,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(child: SmallText(text: item.nirden)),
+                    ],
+                  ),
+
+                  /// TO + STATUS
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Nirä:',
+                            style: TextStyle(
+                              color: theme.colorScheme.secondary,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Bricolage',
+                              fontSize: 10,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          SizedBox(
+                            width: 120,
+                            child: SmallText(text: item.where),
+                          ),
+                        ],
+                      ),
+                      item.checked
+                          ? const SizedBox()
+                          : const Text(
+                            'Kabul edilmedik',
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontFamily: 'Bricolage',
+                              fontSize: 10,
+                            ),
+                          ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  /// CATEGORY + DATE
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: SmallText(text: item.categoryName),
+                      ),
+                      SmallText(
+                        text:
+                            item.created.toString().substring(0, 10) ==
+                                    formattedDate
+                                ? 'Şu gün'
+                                : item.created.toString().substring(0, 10),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            /// ARROW
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: theme.colorScheme.outline,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  bool _isDateValid(String date) {
+    final d = DateTime.parse(date);
+    return d.isAfter(DateTime.now());
+  }
+
+  Future<List<LogistPageModel>> getData(String filter) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/logistika/?checked=True&page=$page$filter'),
+      Uri.parse(
+        '$baseUrl/logistika/?checked=True&page=$page$filter&is_client=False',
+      ),
     );
     if (response.statusCode == 200) {
       Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
       List results = data['results'];
-      return results.map((e) => LogistCarPageModel.fromJson(e)).toList();
+      return results.map((e) => LogistPageModel.fromJson(e)).toList();
     } else {
       return [];
     }

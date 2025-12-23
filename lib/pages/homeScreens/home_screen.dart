@@ -102,7 +102,7 @@ class HomeScreenState extends State<HomeScreen> {
   Future<List<PageModel>> _fetchPageData() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/logistika/?checked=True&page=$_currentPage'),
+        Uri.parse('$baseUrl/top-products/?checked=True&page=$_currentPage'),
       );
 
       if (response.statusCode == 200) {
@@ -230,7 +230,11 @@ class HomeScreenState extends State<HomeScreen> {
                     ),
                   )
                   : SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      top: 16,
+                    ),
                     sliver: SliverList.separated(
                       itemCount: _items.length + (_hasMore ? 1 : 0),
                       separatorBuilder: (_, __) => const SizedBox(height: 12),

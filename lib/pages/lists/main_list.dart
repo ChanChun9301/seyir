@@ -205,157 +205,8 @@ class _MainListState extends State<MainList>
                     isLoading ? futureDatas.length + 1 : futureDatas.length,
                 itemBuilder: (context, index) {
                   if (index < futureDatas.length) {
-                    return InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => DetailPage(
-                                  id: futureDatas[index].id,
-                                  query: widget.queryName!,
-                                  title: futureDatas[index].title,
-                                ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(height(context) / 84.4),
-                          ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color.fromRGBO(99, 99, 99, 0.2),
-                              blurRadius: 8,
-                              spreadRadius: 0,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                          color: Theme.of(context).colorScheme.primaryContainer,
-                        ),
-                        margin: EdgeInsets.only(
-                          top: height(context) / 84.4,
-                          left: height(context) / 84.4,
-                          right: height(context) / 84.4,
-                        ),
-                        width: double.infinity,
-                        height: 90,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 150,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(
-                                    height(context) / 84.4,
-                                  ),
-                                  bottomLeft: Radius.circular(
-                                    height(context) / 84.4,
-                                  ),
-                                ),
-                                color: Colors.white38,
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(
-                                    height(context) / 84.4,
-                                  ),
-                                  bottomLeft: Radius.circular(
-                                    height(context) / 84.4,
-                                  ),
-                                ),
-                                child: Image.network(
-                                  (futureDatas[index].img != '')
-                                      ? futureDatas[index].img
-                                      : 'assets/no-image.jpg',
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 10,
-                                    right: 10,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Text(
-                                        futureDatas[index].title,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).colorScheme.secondary,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'Bricolage',
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      Text(
-                                        futureDatas[index].desc,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).colorScheme.onSecondary,
-                                          fontWeight: FontWeight.w400,
-                                          fontFamily: 'Bricolage',
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          SmallText(
-                                            text:
-                                                futureDatas[index].addressName
-                                                    .toString(),
-                                          ),
-                                          SizedBox(
-                                            width: 60,
-                                            child: SmallText(
-                                              text:
-                                                  futureDatas[index]
-                                                      .categoryName
-                                                      .toString(),
-                                            ),
-                                          ),
-                                          SmallText(
-                                            text:
-                                                (futureDatas[index].created
-                                                            .toString()
-                                                            .substring(0, 10) ==
-                                                        formattedDate
-                                                            .toString())
-                                                    ? 'Şu gün'
-                                                    : futureDatas[index].created
-                                                        .toString()
-                                                        .substring(0, 10),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+                    return _buildModernListItem(futureDatas[index], context);
+                    ;
                   } else {
                     return const CircularContainerMain();
                   }
@@ -363,6 +214,141 @@ class _MainListState extends State<MainList>
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernListItem(PageModel item, BuildContext context) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => DetailPage(
+                  id: item.id,
+                  query: widget.queryName!,
+                  title: item.title,
+                ),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Hero(
+              tag: 'item-${item.id}',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Image.network(
+                  (item.img != '') ? item.img : 'assets/no-image.jpg',
+                  width: 90,
+                  height: 90,
+                  fit: BoxFit.cover,
+                  errorBuilder:
+                      (_, __, ___) => Container(
+                        width: 90,
+                        height: 90,
+                        color: Colors.grey.shade200,
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: Colors.grey,
+                        ),
+                      ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            /// TEXT
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// TITLE
+                  Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: theme.colorScheme.secondary,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  /// DESCRIPTION
+                  Text(
+                    item.desc,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: theme.colorScheme.onSecondary,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  /// ADDRESS + CATEGORY + DATE
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SmallText(text: item.addressName ?? ""),
+
+                      SizedBox(
+                        width: 60,
+                        child: SmallText(text: item.categoryName ?? ""),
+                      ),
+
+                      Row(
+                        children: [
+                          const Icon(Icons.access_time, size: 13),
+                          const SizedBox(width: 4),
+                          SmallText(
+                            text:
+                                (item.created.toString().substring(0, 10) ==
+                                        formattedDate)
+                                    ? "Şu gün"
+                                    : item.created.toString().substring(0, 10),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 8),
+
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: theme.colorScheme.outline,
+            ),
+          ],
         ),
       ),
     );

@@ -26,7 +26,7 @@ class TextFieldCustom extends StatelessWidget {
         ],
       ),
       width: double.infinity,
-      height: 30,
+      height: 50,
       child: TextField(
         controller: ctr,
         maxLines: 1,
@@ -55,7 +55,7 @@ class TextFieldCustom extends StatelessWidget {
           labelText: text,
           // hintText:_phoneNumber.get(1),
           labelStyle: TextStyle(
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: FontWeight.w500,
             color: Theme.of(context).colorScheme.secondary,
           ),

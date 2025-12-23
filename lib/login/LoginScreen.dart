@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:seyir/pages/welcome/welcome_screen.dart';
 import '/utils/constants.dart'; // baseUrl
 import '/utils/dialogs.dart';
 import '/pages/controls/token_control.dart';
 import '/pages/homeScreens/home_screen.dart';
+import '/widgets/getPhoneModel.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -53,34 +55,23 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
+      final phoneModel = await getPhoneModel();
+
       final response = await http.post(
         Uri.parse('$baseUrl/login/'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'author': phone}),
+        body: jsonEncode({'author': phone, 'phone_model': phoneModel}),
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        final accessToken = data['access'];
-        final refreshToken = data['refresh'];
-
-        log('ACCESS: $accessToken');
-        log('REFRESH: $refreshToken');
-        log('PHONE: $phone');
-
-        // Сохраняем токены и телефон в Hive
-        _appTokenBox.put('jwt', accessToken);
-        _appTokenBox.put('refresh', refreshToken);
         _appTokenBox.put('phone', phone);
+        _appTokenBox.put('token', "False");
 
-        // Обновляем контроллер
         await Get.put(TokenControl()).fetchTokenItems();
 
-        // Переходим на домашний экран
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const WelcomeScreen()),
         );
       } else {
         final error = jsonDecode(response.body)['error'];

@@ -28,6 +28,10 @@ dependencies:
   cached_network_image: ^3.4.1
   intl: ^0.20.2
   google_maps_flutter: ^2.12.2
+  permission_handler: ^11.0.0
+  device_info_plus: ^10.1.0
+
+
   # maps_flutter: ^1.0.0
 
 dev_dependencies:

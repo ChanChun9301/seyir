@@ -1,33 +1,31 @@
 // ignore_for_file: file_names
-// import 'dart:developer';
 
 import 'dart:developer';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:seyir/widgets/html_widget.dart';
-import 'package:seyir/widgets/images.dart';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../component/navbar.dart';
 import '/utils/constants.dart';
 import '/utils/getData.dart';
-import 'package:flutter/material.dart';
+import '/utils/models.dart';
+import '/widgets/images.dart';
 import '/widgets/text.dart';
 import '/widgets/circulateContainer.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../../component/navbar.dart';
-import '/utils/models.dart';
 
 class TopDetailPage extends StatefulWidget {
   final String id;
   final String title;
-  const TopDetailPage({Key? key, required this.id, required this.title})
-    : super(key: key);
+
+  const TopDetailPage({super.key, required this.id, required this.title});
 
   @override
-  State<TopDetailPage> createState() => _CarDetailPageState();
+  State<TopDetailPage> createState() => _TopDetailPageState();
 }
 
-class _CarDetailPageState extends State<TopDetailPage> {
+class _TopDetailPageState extends State<TopDetailPage> {
   late Future<DetailModel> futureCar;
   final CarouselSliderController csc = CarouselSliderController();
   List<String> images = [];
@@ -42,341 +40,267 @@ class _CarDetailPageState extends State<TopDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(40),
-        child: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          elevation: 10,
-          centerTitle: true,
-          title: Text(
-            widget.title,
-            style: const TextStyle(
-              letterSpacing: 0,
-              fontFamily: "Bricolage",
-              fontSize: 14,
-              color: Colors.white,
-            ),
+      drawer: const NavBar(),
+      backgroundColor: Theme.of(context).colorScheme.background,
+
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            fontFamily: "Bricolage",
+            fontSize: 16,
+            color: Colors.white,
           ),
-          leading: Builder(
-            builder: (BuildContext context) {
-              return IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_outlined,
-                  color: Colors.white,
-                  size: 14,
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              );
-            },
-          ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-          ),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
         ),
       ),
-      extendBodyBehindAppBar: true,
-      backgroundColor: Theme.of(context).colorScheme.background,
-      drawer: const NavBar(),
-      body: SingleChildScrollView(
-        child: FutureBuilder(
-          future: futureCar,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              images.clear();
-              images.addAll(snapshot.data!.images);
 
-              return SafeArea(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(height(context) / 84.4),
-                      child: Column(
-                        children: [
-                          images.isNotEmpty
-                              ? CarouselSlider(
-                                items:
-                                    images
-                                        .asMap()
-                                        .entries
-                                        .map(
-                                          (e) => Container(
-                                            width: double.infinity,
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 0,
-                                            ),
-                                            child: ClipRRect(
-                                              borderRadius: BorderRadius.all(
-                                                Radius.circular(
-                                                  height(context) / 84.4,
-                                                ),
-                                              ),
-                                              child: Images(
-                                                images: images,
-                                                id: e.key,
-                                              ),
-                                            ),
+      body: FutureBuilder<DetailModel>(
+        future: futureCar,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const CircularContainerMain();
+          }
+
+          final data = snapshot.data!;
+          images
+            ..clear()
+            ..addAll(data.images);
+
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  /// ================= IMAGES =================
+                  _card(
+                    context,
+                    Column(
+                      children: [
+                        CarouselSlider(
+                          carouselController: csc,
+                          items:
+                              images.isNotEmpty
+                                  ? images
+                                      .asMap()
+                                      .entries
+                                      .map(
+                                        (e) => ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
                                           ),
-                                        )
-                                        .toList(),
-                                carouselController: csc,
-                                options: CarouselOptions(
-                                  scrollPhysics: const BouncingScrollPhysics(),
-                                  autoPlay: true,
-                                  aspectRatio: 2,
-                                  viewportFraction: 1,
-                                  onPageChanged:
-                                      (index, reason) => {
-                                        setState(() {
-                                          _currentIndex = index;
-                                        }),
-                                      },
-                                ),
-                              )
-                              : Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 0,
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(height(context) / 84.4),
-                                  ),
-                                  child: Image.asset(
-                                    'assets/no-image.jpg',
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                  ),
-                                ),
-                              ),
-                          const SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children:
-                                images.asMap().entries.map((entry) {
-                                  int index = entry.key;
-                                  return GestureDetector(
-                                    onTap: () => csc.animateToPage(index),
-                                    child: Container(
-                                      width: _currentIndex == index ? 17 : 7,
-                                      height: 7.0,
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 3.0,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(
-                                          height(context) / 84.4,
+                                          child: Images(
+                                            images: images,
+                                            id: e.key,
+                                          ),
                                         ),
-                                        color:
-                                            _currentIndex == index
-                                                ? const Color.fromARGB(
-                                                  255,
-                                                  161,
-                                                  93,
-                                                  83,
-                                                )
-                                                : Colors.teal,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                          ),
-                        ],
-                      ),
-                    ),
-                    BigText(text: snapshot.data!.title),
-
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Column(
-                        children: [
-                          const Divider(color: Colors.grey),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SmallText(
-                                text:
-                                    'Kategoriýasy: ${snapshot.data!.category.toString()}',
-                              ),
-                              SmallText(
-                                text:
-                                    (snapshot.data!.created
-                                                .toString()
-                                                .substring(0, 10) ==
-                                            formattedDate)
-                                        ? 'Şu gün'
-                                        : snapshot.data!.created
-                                            .toString()
-                                            .substring(0, 10),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: width(context),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Ýeri:',
-                                      style: TextStyle(
-                                        decoration: TextDecoration.underline,
-                                        fontSize: 12,
-                                        fontFamily: "Bricolage",
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Telefon belgi:',
-                                      style: TextStyle(
-                                        decoration: TextDecoration.underline,
-                                        fontFamily: "Bricolage",
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Bahasy:',
-                                      style: TextStyle(
-                                        decoration: TextDecoration.underline,
-                                        fontSize: 12,
-                                        fontFamily: "Bricolage",
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
+                                      )
+                                      .toList()
+                                  : [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Image.asset(
+                                        'assets/no-image.jpg',
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
                                       ),
                                     ),
                                   ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      snapshot.data!.address.toString(),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontFamily: "Bricolage",
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                      ),
-                                    ),
-                                    Text(
-                                      snapshot.data!.phone,
-                                      style: TextStyle(
-                                        fontFamily: "Bricolage",
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${snapshot.data!.price} TMT',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontFamily: "Bricolage",
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Divider(color: Colors.grey),
-                          SizedBox(
-                            child: Text(
-                              snapshot.data!.desc,
-                              style: TextStyle(
-                                fontFamily: "Bricolage",
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color:
-                                    Theme.of(context).colorScheme.onSecondary,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                      ),
-                    ),
-
-                    Container(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: height(context) / 84.4,
-                      ),
-                      width: width(context),
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          final call = Uri(
-                            scheme: 'tel',
-                            path: '+993${snapshot.data!.phone}',
-                          );
-                          launchUrl(call);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(height(context) / 84.4),
-                            ),
+                          options: CarouselOptions(
+                            autoPlay: true,
+                            viewportFraction: 1,
+                            aspectRatio: 2,
+                            onPageChanged: (index, _) {
+                              setState(() => _currentIndex = index);
+                            },
                           ),
                         ),
-                        child: const Row(
+
+                        const SizedBox(height: 6),
+
+                        /// INDICATORS
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              CupertinoIcons.phone,
-                              size: 16,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              'Habarlaşmak',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontFamily: "Bricolage",
-                                letterSpacing: 1,
-                              ),
-                            ),
-                          ],
+                          children:
+                              images.asMap().entries.map((entry) {
+                                return GestureDetector(
+                                  onTap: () => csc.animateToPage(entry.key),
+                                  child: Container(
+                                    width: _currentIndex == entry.key ? 16 : 6,
+                                    height: 6,
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      color:
+                                          _currentIndex == entry.key
+                                              ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                              : Colors.grey.shade400,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  /// ================= TITLE =================
+                  _card(
+                    context,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        BigText(text: data.title),
+                        const SizedBox(height: 6),
+                        SmallText(text: 'Kategoriýasy: ${data.category}'),
+                      ],
+                    ),
+                  ),
+
+                  /// ================= INFO =================
+                  _card(
+                    context,
+                    Column(
+                      children: [
+                        _infoRow(context, Icons.location_on, data.address),
+                        _infoRow(context, Icons.call, data.phone),
+                        _infoRow(
+                          context,
+                          Icons.price_check,
+                          '${data.price} TMT',
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  /// ================= DESCRIPTION =================
+                  _card(
+                    context,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Beýan',
+                          style: TextStyle(
+                            fontFamily: 'Bricolage',
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          data.desc,
+                          style: TextStyle(
+                            fontFamily: "Bricolage",
+                            fontSize: 12,
+                            height: 1.4,
+                            color: Theme.of(context).colorScheme.onSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// ================= CALL BUTTON =================
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        final call = Uri(
+                          scheme: 'tel',
+                          path: '+993${data.phone}',
+                        );
+                        launchUrl(call);
+                      },
+                      icon: const Icon(
+                        CupertinoIcons.phone,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Habarlaşmak',
+                        style: TextStyle(
+                          fontFamily: "Bricolage",
+                          color: Colors.white,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                     ),
-                  ],
-                ),
-              );
-            } else {
-              return const CircularContainerMain();
-            }
-          },
-        ),
+                  ),
+
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// ================= CARD =================
+  Widget _card(BuildContext context, Widget child) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      width: width(context),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromRGBO(0, 0, 0, 0.05),
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  /// ================= INFO ROW =================
+  Widget _infoRow(BuildContext context, IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: Theme.of(context).colorScheme.onSecondary,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontFamily: "Bricolage",
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).colorScheme.onSecondary,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

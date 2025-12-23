@@ -1,27 +1,16 @@
-// ignore_for_file: file_names
-import 'dart:developer';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:seyir/main.dart';
-import 'package:seyir/pages/logist/detail_page_logist.dart';
-import 'package:seyir/pages/logist/logist_search_delagate.dart';
 import 'package:seyir/pages/logist/tabs/tabScreen_one.dart';
 import 'package:seyir/pages/logist/tabs/tabScreen_two.dart';
-import 'package:seyir/widgets/circulateContainer.dart';
-import 'package:seyir/widgets/filterWidget.dart';
-import '/component/listAppbar.dart';
 import '/utils/constants.dart';
 import '../../component/navbar.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '/utils/models.dart';
-import '../../widgets/text.dart';
 
 // ignore: must_be_immutable
 class LogistMainList extends StatefulWidget {
   String filter = '';
-  LogistMainList({Key? key, required this.filter}) : super(key: key);
+
+  LogistMainList({super.key, required this.filter});
   @override
   State<LogistMainList> createState() => _LogistMainListState();
 }
@@ -65,7 +54,7 @@ class _LogistMainListState extends State<LogistMainList>
           title: Text(
             'Logist',
             style: const TextStyle(
-              fontStyle: FontStyle.italic,
+              // fontStyle: FontStyle.italic,
               letterSpacing: 2,
               fontFamily: "Bricolage",
               fontSize: 16,
@@ -98,9 +87,6 @@ class _LogistMainListState extends State<LogistMainList>
               fontWeight: FontWeight.bold,
             ),
             tabs: const [Tab(text: 'Ulaglar'), Tab(text: 'Müşderiler')],
-          ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
           ),
         ),
       ),

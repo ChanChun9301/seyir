@@ -15,7 +15,7 @@ class SmallText extends StatelessWidget {
         color: Theme.of(context).colorScheme.onSecondary,
         fontWeight: FontWeight.w400,
         fontFamily: 'Bricolage',
-        fontSize: 10,
+        fontSize: 14,
       ),
     );
   }
@@ -35,7 +35,7 @@ class BigText extends StatelessWidget {
         color: Theme.of(context).colorScheme.secondary,
         fontWeight: FontWeight.bold,
         fontFamily: 'Bricolage',
-        fontSize: 14,
+        fontSize: 18,
       ),
     );
   }

@@ -133,7 +133,11 @@ class _LogistTabTwoListState extends State<LogistTabTwoList>
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const LogistFilterWidget(),
+                          builder:
+                              (context) => const LogistFilterWidget(
+                                client: '',
+                                categories: [],
+                              ),
                         ),
                       );
                     },
@@ -176,337 +180,9 @@ class _LogistTabTwoListState extends State<LogistTabTwoList>
               itemBuilder: (context, index) {
                 if (index < futureDatas.length) {
                   log('>>>' + futureDatas[index].categoryName);
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => LogistDetailPage(
-                                id: futureDatas[index].id,
-                                title: futureDatas[index].title,
-                              ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(height(context) / 84.4),
-                        ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color.fromRGBO(99, 99, 99, 0.2),
-                            blurRadius: 8,
-                            spreadRadius: 0,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                      margin: EdgeInsets.only(
-                        // top: height(context) / 84.4,
-                        left: height(context) / 84.4,
-                        right: height(context) / 84.4,
-                      ),
-                      width: double.infinity,
-                      height: 115,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 110,
-                            height: double.infinity,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(
-                                  height(context) / 84.4,
-                                ),
-                                bottomLeft: Radius.circular(
-                                  height(context) / 84.4,
-                                ),
-                              ),
-                              color: Colors.white38,
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(
-                                  height(context) / 84.4,
-                                ),
-                                bottomLeft: Radius.circular(
-                                  height(context) / 84.4,
-                                ),
-                              ),
-                              child: Image.network(
-                                (futureDatas[index].img != '')
-                                    ? futureDatas[index].img
-                                    : 'assets/no-image.jpg',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: SizedBox(
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 10,
-                                  right: 10,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Text(
-                                      futureDatas[index].title,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.secondary,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Bricolage',
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              'Ahyrky sene:',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color:
-                                                    Theme.of(
-                                                      context,
-                                                    ).colorScheme.secondary,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Bricolage',
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Text(
-                                              (futureDatas[index].created
-                                                          .toString()
-                                                          .substring(0, 10) !=
-                                                      formattedDate.toString())
-                                                  ? futureDatas[index].lastDate
-                                                      .toString()
-                                                  : futureDatas[index].lastDate
-                                                      .toString(),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color:
-                                                    (int.parse(
-                                                                  futureDatas[index]
-                                                                      .lastDate
-                                                                      .substring(
-                                                                        5,
-                                                                        7,
-                                                                      ),
-                                                                ) >=
-                                                                month &&
-                                                            int.parse(
-                                                                  futureDatas[index]
-                                                                      .lastDate
-                                                                      .substring(
-                                                                        8,
-                                                                        10,
-                                                                      ),
-                                                                ) >=
-                                                                day &&
-                                                            int.parse(
-                                                                  futureDatas[index]
-                                                                      .lastDate
-                                                                      .substring(
-                                                                        0,
-                                                                        4,
-                                                                      ),
-                                                                ) >=
-                                                                year)
-                                                        ? Theme.of(
-                                                          context,
-                                                        ).colorScheme.secondary
-                                                        : Colors.red,
-                                                fontWeight: FontWeight.w400,
-                                                fontFamily: 'Bricolage',
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              (futureDatas[index].isBring ==
-                                                      true)
-                                                  ? 'Getirmeli'
-                                                  : 'Alyp gitmeli',
-                                              style: TextStyle(
-                                                color:
-                                                    (futureDatas[index]
-                                                                .isBring ==
-                                                            true)
-                                                        ? (SeyirApp
-                                                                    .themeNotifier
-                                                                    .value ==
-                                                                ThemeMode.light
-                                                            ? Colors
-                                                                .green
-                                                                .shade500
-                                                            : Colors
-                                                                .grey
-                                                                .shade200)
-                                                        : Colors.blue,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Bricolage',
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Icon(
-                                              (futureDatas[index].isBring ==
-                                                      true)
-                                                  ? CupertinoIcons
-                                                      .arrow_down_square_fill
-                                                  : CupertinoIcons
-                                                      .arrow_up_square_fill,
-                                              size: 18,
-                                              color:
-                                                  (futureDatas[index].isBring ==
-                                                          true)
-                                                      ? Colors.green
-                                                      : Colors.blue,
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      removeHtmlTags(futureDatas[index].desc),
-
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onSecondary,
-                                        fontWeight: FontWeight.w400,
-                                        fontFamily: 'Bricolage',
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Nirden:',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color:
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.secondary,
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: 'Bricolage',
-                                            fontSize: 10,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 5),
-                                        SmallText(
-                                          text:
-                                              futureDatas[index].nirden
-                                                  .toString(),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Nirä:',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color:
-                                                    Theme.of(
-                                                      context,
-                                                    ).colorScheme.secondary,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Bricolage',
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            SmallText(
-                                              text:
-                                                  futureDatas[index].where
-                                                      .toString(),
-                                            ),
-                                          ],
-                                        ),
-                                        futureDatas[index].checked == true
-                                            ? const SmallText(text: '')
-                                            : const Text(
-                                              'Kabul edilmedik',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color: Colors.redAccent,
-                                                fontWeight: FontWeight.w400,
-                                                fontFamily: 'Bricolage',
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                      ],
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        SizedBox(
-                                          width: 150,
-                                          child: SmallText(
-                                            text:
-                                                futureDatas[index].categoryName
-                                                    .toString(),
-                                          ),
-                                        ),
-                                        SmallText(
-                                          text:
-                                              (futureDatas[index].created
-                                                          .toString()
-                                                          .substring(0, 10) ==
-                                                      formattedDate.toString())
-                                                  ? 'Şu gün'
-                                                  : futureDatas[index].created
-                                                      .toString()
-                                                      .substring(0, 10),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  return buildLogistTabTwoModernItemCard(
+                    context: context,
+                    item: futureDatas[index],
                   );
                 } else {
                   return const CircularContainerMain();
@@ -519,9 +195,249 @@ class _LogistTabTwoListState extends State<LogistTabTwoList>
     );
   }
 
+  Widget buildLogistTabTwoModernItemCard({
+    required BuildContext context,
+    required LogistPageModel item,
+  }) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => LogistDetailPage(id: item.id, title: item.title),
+          ),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(
+          horizontal: height(context) / 84.4,
+          vertical: 6,
+        ),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Color.fromRGBO(99, 99, 99, 0.18),
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            /// IMAGE
+            Hero(
+              tag: 'logist-two-${item.id}',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  item.img.isNotEmpty ? item.img : 'assets/no-image.jpg',
+                  width: 90,
+                  height: 110,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            /// CONTENT
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// TITLE
+                  Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: theme.colorScheme.secondary,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Bricolage',
+                      fontSize: 13,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  /// DEADLINE + TYPE
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Ahyrky sene:',
+                            style: TextStyle(
+                              color: theme.colorScheme.secondary,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Bricolage',
+                              fontSize: 10,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            item.lastDate,
+                            style: TextStyle(
+                              color:
+                                  _isDateValid(item.lastDate)
+                                      ? theme.colorScheme.secondary
+                                      : Colors.red,
+                              fontFamily: 'Bricolage',
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            item.isBring ? 'Getirmeli' : 'Alyp gitmeli',
+                            style: TextStyle(
+                              color:
+                                  item.isBring
+                                      ? (SeyirApp.themeNotifier.value ==
+                                              ThemeMode.light
+                                          ? Colors.green.shade500
+                                          : Colors.grey.shade200)
+                                      : Colors.blue,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Bricolage',
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            item.isBring
+                                ? CupertinoIcons.arrow_down_square_fill
+                                : CupertinoIcons.arrow_up_square_fill,
+                            size: 18,
+                            color: item.isBring ? Colors.green : Colors.blue,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  /// DESCRIPTION
+                  Text(
+                    removeHtmlTags(item.desc),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSecondary,
+                      fontFamily: 'Bricolage',
+                      fontSize: 10,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  /// FROM
+                  Row(
+                    children: [
+                      Text(
+                        'Nirden:',
+                        style: TextStyle(
+                          color: theme.colorScheme.secondary,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Bricolage',
+                          fontSize: 10,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(child: SmallText(text: item.nirden)),
+                    ],
+                  ),
+
+                  /// TO + STATUS
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Nirä:',
+                            style: TextStyle(
+                              color: theme.colorScheme.secondary,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Bricolage',
+                              fontSize: 10,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          SizedBox(
+                            width: 120,
+                            child: SmallText(text: item.where),
+                          ),
+                        ],
+                      ),
+                      item.checked
+                          ? const SizedBox()
+                          : const Text(
+                            'Kabul edilmedik',
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontFamily: 'Bricolage',
+                              fontSize: 10,
+                            ),
+                          ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  /// CATEGORY + DATE
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: SmallText(text: item.categoryName),
+                      ),
+                      SmallText(
+                        text:
+                            item.created.toString().substring(0, 10) ==
+                                    formattedDate
+                                ? 'Şu gün'
+                                : item.created.toString().substring(0, 10),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            /// ARROW
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: theme.colorScheme.outline,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  bool _isDateValid(String date) {
+    final d = DateTime.parse(date);
+    return d.isAfter(DateTime.now());
+  }
+
   Future<List<LogistPageModel>> getData(String filter) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/logistmain-list/?checked=True&page=$page$filter'),
+      Uri.parse(
+        '$baseUrl/logistika/?checked=True&page=$page$filter&is_client=True',
+      ),
     );
     if (response.statusCode == 200) {
       Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));

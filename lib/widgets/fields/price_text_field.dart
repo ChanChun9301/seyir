@@ -26,7 +26,7 @@ class PriceTextFieldCustom extends StatelessWidget {
         ],
       ),
       width: w / 2.2,
-      height: 30,
+      height: 50,
       child: TextField(
         controller: ctr,
         maxLines: 1,
@@ -68,7 +68,7 @@ class PriceTextFieldCustom extends StatelessWidget {
           errorText: validate ? "Telefon belgini dolduruň!" : null,
           labelText: 'Bahasy',
           labelStyle: TextStyle(
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: FontWeight.w500,
             color: Theme.of(context).colorScheme.secondary,
           ),

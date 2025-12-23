@@ -26,6 +26,7 @@ class LogistFilterWidget extends StatefulWidget {
 
 class _LogistFilterWidgetState extends State<LogistFilterWidget> {
   final bool _validate = false;
+  final String text = 'Setir ýalňyş';
 
   bool selectedGet = false;
   bool selectedBring = false;
@@ -38,6 +39,8 @@ class _LogistFilterWidgetState extends State<LogistFilterWidget> {
   TextEditingController nirdenCtr = TextEditingController();
   TextEditingController priceFromCtr = TextEditingController();
   TextEditingController priceToCtr = TextEditingController();
+  TextEditingController minPrice = TextEditingController();
+  TextEditingController maxPrice = TextEditingController();
 
   bool showSpinner = false;
   Future<List<AddressPage>>? _addressesFuture;
@@ -55,6 +58,7 @@ class _LogistFilterWidgetState extends State<LogistFilterWidget> {
 
     return Scaffold(
       drawer: const NavBar(),
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(40),
         child: AppBar(
@@ -151,15 +155,20 @@ class _LogistFilterWidgetState extends State<LogistFilterWidget> {
                         /// ================= TEXT FIELDS =================
                         Row(
                           children: [
-                            TextFieldRowCustom(
-                              ctr: whereCtr,
-                              text: 'Nirä',
-                              validate: _validate,
+                            Expanded(
+                              child: TextFieldRowCustom(
+                                ctr: whereCtr,
+                                text: 'Nirä',
+                                validate: _validate,
+                              ),
                             ),
-                            TextFieldRowCustom(
-                              ctr: nirdenCtr,
-                              text: 'Nirden',
-                              validate: _validate,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextFieldRowCustom(
+                                ctr: nirdenCtr,
+                                text: 'Nirden',
+                                validate: _validate,
+                              ),
                             ),
                           ],
                         ),
@@ -170,20 +179,126 @@ class _LogistFilterWidgetState extends State<LogistFilterWidget> {
                           children: [
                             Expanded(
                               child: TextField(
-                                controller: priceFromCtr,
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Min bahasy',
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  fontSize: 12,
+                                  fontFamily: 'Bricolage',
                                 ),
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(12),
+                                    ),
+                                    borderSide: BorderSide(
+                                      width: 2,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.secondary,
+                                    ),
+                                  ),
+                                  contentPadding: const EdgeInsets.only(
+                                    top: 5,
+                                    bottom: 5,
+                                    left: 10,
+                                    right: 10,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      width: 2,
+                                      color: Colors.white38,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      width: 2,
+                                      color: Colors.green,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  filled: true,
+                                  focusColor: Colors.green[600],
+                                  fillColor:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.primaryContainer,
+                                  errorText:
+                                      _validate ? "Setiri dolduruň!" : null,
+                                  labelText: 'Min bahasy',
+                                  // hintText:_phoneNumber.get(1),
+                                  labelStyle: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                  ),
+                                ),
+                                controller: minPrice,
+                                keyboardType: TextInputType.number,
                               ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: TextField(
-                                controller: priceToCtr,
+                                controller: maxPrice,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Max bahasy',
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  fontSize: 12,
+                                  fontFamily: 'Bricolage',
+                                ),
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(12),
+                                    ),
+                                    borderSide: BorderSide(
+                                      width: 2,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.secondary,
+                                    ),
+                                  ),
+                                  contentPadding: const EdgeInsets.only(
+                                    top: 5,
+                                    bottom: 5,
+                                    left: 10,
+                                    right: 10,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      width: 2,
+                                      color: Colors.white38,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      width: 2,
+                                      color: Colors.green,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  filled: true,
+                                  focusColor: Colors.green[600],
+                                  fillColor:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.primaryContainer,
+                                  errorText:
+                                      _validate ? "Setiri dolduruň!" : null,
+                                  labelText: 'Min bahasy',
+                                  // hintText:_phoneNumber.get(1),
+                                  labelStyle: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                  ),
                                 ),
                               ),
                             ),
@@ -192,28 +307,33 @@ class _LogistFilterWidgetState extends State<LogistFilterWidget> {
 
                         SizedBox(height: h / 84.4),
 
-                        _buildSwitch(
-                          context: context,
-                          value: selectedGet,
-                          label: 'Alyp gitmelimi',
-                          onChanged: (val) {
-                            setState(() {
-                              selectedGet = val;
-                              if (val) selectedBring = false;
-                            });
-                          },
-                        ),
-
-                        _buildSwitch(
-                          context: context,
-                          value: selectedBring,
-                          label: 'Getirmelimi',
-                          onChanged: (val) {
-                            setState(() {
-                              selectedBring = val;
-                              if (val) selectedGet = false;
-                            });
-                          },
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildSwitch(
+                              context: context,
+                              value: selectedGet,
+                              label: 'Alyp gitmelimi',
+                              onChanged: (val) {
+                                setState(() {
+                                  selectedGet = val;
+                                  if (val) selectedBring = false;
+                                });
+                              },
+                            ),
+                            const SizedBox(width: 8),
+                            _buildSwitch(
+                              context: context,
+                              value: selectedBring,
+                              label: 'Getirmelimi',
+                              onChanged: (val) {
+                                setState(() {
+                                  selectedBring = val;
+                                  if (val) selectedGet = false;
+                                });
+                              },
+                            ),
+                          ],
                         ),
 
                         SizedBox(height: h / 84.4),
@@ -315,6 +435,23 @@ class _LogistFilterWidgetState extends State<LogistFilterWidget> {
     if (whereCtr.text.isNotEmpty) {
       parts.add('where=${whereCtr.text}');
     }
+
+    if (minPrice.text.isNotEmpty) {
+      parts.add('min=${minPrice.text}');
+    }
+
+    if (maxPrice.text.isNotEmpty) {
+      parts.add('max=${maxPrice.text}');
+    }
+
+    if (selectedSubcategories.isNotEmpty) {
+      parts.add('category=${selectedSubcategories.join(',')}');
+    }
+
+    /// 🔹 ADDRESS (пример: 1,3)
+    if (selectedSubaddresses.isNotEmpty) {
+      parts.add('address=${selectedSubaddresses.join(',')}');
+    }
     if (selectedBring) {
       parts.add('bring=True');
     } else if (selectedGet) {
@@ -336,7 +473,13 @@ class _LogistFilterWidgetState extends State<LogistFilterWidget> {
     required ValueChanged<bool> onChanged,
   }) {
     return Row(
-      children: [Switch(value: value, onChanged: onChanged), Text(label)],
+      children: [
+        Switch(value: value, onChanged: onChanged),
+        Text(
+          label,
+          style: TextStyle(color: Theme.of(context).colorScheme.onSecondary),
+        ),
+      ],
     );
   }
 }
