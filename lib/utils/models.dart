@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:intl/intl.dart';
 import './constants.dart';
 
+// ========================= IMAGE MODEL =========================
 class ImageModel {
   final int pk;
   final String url;
@@ -11,21 +12,16 @@ class ImageModel {
 
   factory ImageModel.fromJson(Map<String, dynamic> json) {
     return ImageModel(
-      pk:
-          (json['pk'] is int)
-              ? json['pk']
-              : (int.tryParse(json['pk']?.toString() ?? '') ??
-                  0), // Handle int/String for pk
-      url: json['url']?.toString() ?? '', // Ensure url is always a String
+      pk: (json['pk'] is int) ? json['pk'] : int.tryParse(json['pk']?.toString() ?? '') ?? 0,
+      url: json['url']?.toString() ?? '',
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {'pk': pk, 'url': url};
-  }
+  Map<String, dynamic> toJson() => {'pk': pk, 'url': url};
 }
 
-class PageModel {
+// ========================= BASE PAGE MODEL =========================
+class BasePageModel {
   String id;
   String title;
   String desc;
@@ -33,115 +29,146 @@ class PageModel {
   String phone;
   String price;
   DateTime created;
+  bool checked;
+
+  BasePageModel({
+    required this.id,
+    required this.title,
+    required this.phone,
+    required this.price,
+    required this.desc,
+    required this.img,
+    required this.created,
+    required this.checked,
+  });
+
+  String get createdString => DateFormat('yyyy-MM-dd').format(created);
+}
+// ========================= PAGE MODEL =========================
+
+class PageModel extends BasePageModel {
   String addressName;
   String categoryName;
-  bool checked;
 
   PageModel({
-    required this.id,
-    required this.title,
-    required this.phone,
-    required this.price,
-    required this.checked,
-    required this.desc,
-    required this.img,
-    required this.created,
+    required String id,
+    required String title,
+    required String phone,
+    required String price,
+    required bool checked,
+    required String desc,
+    required String img,
+    required DateTime created,
     required this.categoryName,
     required this.addressName,
-  });
+  }) : super(
+          id: id,
+          title: title,
+          phone: phone,
+          price: price,
+          desc: desc,
+          img: img,
+          created: created,
+          checked: checked,
+        );
 
-  factory PageModel.fromJson(Map<String, dynamic> json) => PageModel(
-    id: json["pk"].toString(),
-    title: json["name"] ?? '',
-    phone: json["phone"].toString(),
-    price: json["price"] ?? '',
-    desc: json["text"] ?? '',
-    img: json["img"] ?? json["thumbnail"] ?? '',
-    checked: json["checked"] ?? false,
-    created: DateTime.tryParse(json['created']) ?? DateTime.now(),
-    addressName: json["address_name"] ?? '',
-    categoryName: json["category_name"] ?? '',
-  );
-  String get createdString => DateFormat('yyyy-MM-dd').format(created);
+  factory PageModel.fromJson(Map<String, dynamic> json) {
+    return PageModel(
+      id: json["pk"].toString(),
+      title: json["name"]?.toString() ?? '',
+      phone: json["phone"]?.toString() ?? '',
+      price: json["price"]?.toString() ?? '',
+      desc: json["text"]?.toString() ?? '',
+      img: json["img"] ?? json["thumbnail"] ?? '',
+      checked: json["checked"] ?? false,
+      created: DateTime.tryParse(json['created'] ?? '') ?? DateTime.now(),
+      categoryName: json["category_name"]?.toString() ?? '',
+      addressName: json["address_name"]?.toString() ?? '',
+    );
+  }
+
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "title": title,
-    "phone": phone,
-    "price": price,
-    "desc": desc,
-    "img": img,
-    "checked": checked,
-    "address_name": addressName,
-    "category_name": categoryName,
-    "created": created,
-  };
+        "id": id,
+        "title": title,
+        "phone": phone,
+        "price": price,
+        "desc": desc,
+        "img": img,
+        "checked": checked,
+        "address_name": addressName,
+        "category_name": categoryName,
+        "created": created.toIso8601String(),
+      };
 }
 
-class TopPageModel {
-  String id;
-  String title;
-  String desc;
-  String img;
-  String phone;
-  String price;
-  DateTime created;
+// ========================= TOP PAGE MODEL =========================
+class TopPageModel extends BasePageModel {
   String addressName;
-  bool checked;
 
   TopPageModel({
-    required this.id,
-    required this.title,
-    required this.phone,
-    required this.price,
-    required this.checked,
-    required this.desc,
-    required this.img,
-    required this.created,
+    required String id,
+    required String title,
+    required String phone,
+    required String price,
+    required bool checked,
+    required String desc,
+    required String img,
+    required DateTime created,
     required this.addressName,
-  });
+  }) : super(
+          id: id,
+          title: title,
+          phone: phone,
+          price: price,
+          desc: desc,
+          img: img,
+          created: created,
+          checked: checked,
+        );
 
-  factory TopPageModel.fromJson(Map<String, dynamic> json) => TopPageModel(
-    id: json["pk"].toString(),
-    title: json["name"] = json["name"] ?? '',
-    phone: json["phone"] = json["phone"].toString(),
-    price: json["price"] = json["price"] ?? '',
-    desc: json["text"] = json["text"] ?? '',
-    img: json["img"] = json["img"] ?? '',
-    checked: json["checked"] = json["checked"] ?? '',
-    created:
-        json["created"] = DateTime.tryParse(json['created']) ?? DateTime.now(),
-    addressName: json["address_name"] = json["address_name"] ?? '',
-    // categoryName: json["category_name"] = json["category_name"] ?? '',
-  );
-  String get createdString => DateFormat('yyyy-MM-dd').format(created);
+  factory TopPageModel.fromJson(Map<String, dynamic> json) {
+    return TopPageModel(
+      id: json["pk"].toString(),
+      title: json["name"]?.toString() ?? '',
+      phone: json["phone"]?.toString() ?? '',
+      price: json["price"]?.toString() ?? '',
+      desc: json["text"]?.toString() ?? '',
+      img: json["img"]?.toString() ?? '',
+      checked: json["checked"] ?? false,
+      created: DateTime.tryParse(json['created'] ?? '') ?? DateTime.now(),
+      addressName: json["address_name"]?.toString() ?? '',
+    );
+  }
+
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "title": title,
-    "phone": phone,
-    "price": price,
-    "desc": desc,
-    "img": img,
-    "checked": checked,
-    "address_name": addressName,
-    // "category_name": categoryName,
-    "created": created,
-  };
+        "id": id,
+        "title": title,
+        "phone": phone,
+        "price": price,
+        "desc": desc,
+        "img": img,
+        "checked": checked,
+        "address_name": addressName,
+        "created": created.toIso8601String(),
+      };
 }
+
+// ========================= LOGIST PAGE MODEL =========================
 
 class LogistPageModel {
   String id;
   String title;
   String desc;
   String img;
-  String categoryName; // теперь список строк
-  String addressName; // список строк
+  String categoryName;
+  String addressName;
   String phone;
   String where;
   String nirden;
-  bool checked;
   String lastDate;
   bool isBring;
   bool isClient;
+  bool checked;
   String price;
   DateTime created;
 
@@ -163,44 +190,45 @@ class LogistPageModel {
     required this.checked,
   });
 
-  factory LogistPageModel.fromJson(Map<String, dynamic> json) =>
-      LogistPageModel(
-        id: json["pk"].toString(),
-        title: json["name"] ?? '',
-        phone: json["phone"].toString(),
-        price: json["price"]?.toString() ?? '',
-        where: json["where"] ?? '',
-        nirden: json["nirden"] ?? '',
-        lastDate: json["last_date"] ?? '',
-        isBring: json["bring"] ?? false,
-        isClient: json["client"] ?? false,
-        desc: json["text"] ?? '',
-        img: json["img"] ?? '',
-        checked: json["checked"] ?? false,
-        created: DateTime.tryParse(json["created"] ?? '') ?? DateTime.now(),
-        categoryName: json["category_name"] ?? '',
-        addressName: json["address_name"] ?? '',
-      );
+  factory LogistPageModel.fromJson(Map<String, dynamic> json) {
+    return LogistPageModel(
+      id: json["pk"].toString(),
+      title: json["name"]?.toString() ?? '',
+      phone: json["phone"]?.toString() ?? '',
+      price: json["price"]?.toString() ?? '',
+      where: json["where"]?.toString() ?? '',
+      nirden: json["nirden"]?.toString() ?? '',
+      lastDate: json["last_date"]?.toString() ?? '',
+      isBring: json["bring"] ?? false,
+      isClient: json["client"] ?? false,
+      desc: json["text"]?.toString() ?? '',
+      img: json["img"]?.toString() ?? '',
+      checked: json["checked"] ?? false,
+      created: DateTime.tryParse(json["created"] ?? '') ?? DateTime.now(),
+      categoryName: json["category_name"]?.toString() ?? '',
+      addressName: json["address_name"]?.toString() ?? '',
+    );
+  }
 
   String get createdString => DateFormat('yyyy-MM-dd').format(created);
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "title": title,
-    "phone": phone,
-    "where": where,
-    "nirden": nirden,
-    "last_date": lastDate,
-    "bring": isBring,
-    "client": isClient,
-    "price": price,
-    "desc": desc,
-    "img": img,
-    "checked": checked,
-    "category_name": categoryName,
-    "address_name": addressName,
-    "created": created.toIso8601String(),
-  };
+        "id": id,
+        "title": title,
+        "phone": phone,
+        "where": where,
+        "nirden": nirden,
+        "last_date": lastDate,
+        "bring": isBring,
+        "client": isClient,
+        "price": price,
+        "desc": desc,
+        "img": img,
+        "checked": checked,
+        "category_name": categoryName,
+        "address_name": addressName,
+        "created": created.toIso8601String(),
+      };
 }
 
 class LogistDetailModel {
