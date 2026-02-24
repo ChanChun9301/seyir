@@ -1,34 +1,26 @@
 // ignore_for_file: file_names
 import 'package:flutter/material.dart';
 import 'package:seyir/widgets/circulateContainer.dart';
+import 'package:seyir/api/fetch_spare.dart';
 import 'package:seyir/widgets/filterWidget_car.dart';
 import 'package:seyir/widgets/filterWidget_service.dart';
 import 'package:seyir/widgets/filterWidget_spares.dart';
-import 'package:seyir/api/fetches.dart';
 import '/utils/constants.dart';
 import '../../component/navbar.dart';
-
 import '/utils/models.dart';
 import '../../widgets/text.dart';
-import '../detail/detail_page.dart';
-import '../detail/car_detail_page.dart';
+import './detail_spare_page.dart';
 import '../search_delagate.dart';
 
-class MainList extends StatefulWidget {
-  final String? pageName;
-  final String? queryName;
+// ignore: must_be_immutable
+class SpareMainList extends StatefulWidget {
   String filter = '';
-  MainList({
-    Key? key,
-    required this.pageName,
-    required this.queryName,
-    required this.filter,
-  }) : super(key: key);
+  SpareMainList({super.key, required this.filter});
   @override
-  State<MainList> createState() => _MainListState();
+  State<SpareMainList> createState() => _SpareMainListState();
 }
 
-class _MainListState extends State<MainList>
+class _SpareMainListState extends State<SpareMainList>
     with SingleTickerProviderStateMixin {
   late List<PageModel> futureDatas = [];
   final control = ScrollController();
@@ -55,11 +47,7 @@ class _MainListState extends State<MainList>
   Future<void> _loadData() async {
     if (!isLoading) {
       isLoading = true;
-      final newPageModels = await getData(
-        widget.queryName!,
-        widget.filter,
-        page,
-      );
+      final newPageModels = await getData(page, widget.filter);
       setState(() {
         futureDatas.addAll(newPageModels);
       });
@@ -95,7 +83,7 @@ class _MainListState extends State<MainList>
           elevation: 10,
           centerTitle: true,
           title: Text(
-            widget.pageName!,
+            'Awto şaýlary',
             style: const TextStyle(
               // fontStyle: FontStyle.italic,
               letterSpacing: 2,
@@ -120,30 +108,12 @@ class _MainListState extends State<MainList>
                   color: Colors.white,
                   iconSize: 20, // 16 azajyk kiçi görner, 20 has oňat
                   onPressed: () async {
-                    if (widget.queryName == 'car') {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) =>
-                                  CarFilterWidget(currentFilter: widget.filter),
-                        ),
-                      );
-                    } else if (widget.queryName == 'hyzmatlar') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ServiceFilterWidget(),
-                        ),
-                      );
-                    } else {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SparesFilterWidget(),
-                        ),
-                      );
-                    }
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SparesFilterWidget(),
+                      ),
+                    );
                   },
                 ),
                 // Eger filter bar bolsa, gyzyl ýa-da sary nokatjygy görkezýäris
@@ -210,10 +180,7 @@ class _MainListState extends State<MainList>
               onPressed: () {
                 showSearch(
                   context: context,
-                  delegate: SearchFilter(
-                    urlName: widget.queryName!,
-                    queries: widget.queryName,
-                  ),
+                  delegate: SearchFilter(urlName: 'spares', queries: 'spares'),
                 );
               },
             ),
@@ -274,14 +241,7 @@ class _MainListState extends State<MainList>
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder:
-                widget.queryName != 'car'
-                    ? (_) => DetailPage(
-                      id: item.id,
-                      query: widget.queryName!,
-                      title: item.title,
-                    )
-                    : (_) => CarDetailPage(id: item.id, title: item.title),
+            builder: (_) => SpareDetailPage(id: item.id, title: item.title),
           ),
         );
       },
@@ -347,7 +307,7 @@ class _MainListState extends State<MainList>
 
                   /// DESCRIPTION
                   Text(
-                    removeHtmlTags(item.desc),
+                    item.desc,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(

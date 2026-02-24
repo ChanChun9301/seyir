@@ -1,4 +1,4 @@
-import 'dart:developer';
+// import 'dart:developer';
 
 import 'package:get/get.dart';
 import 'package:seyir/pages/controls/token_control.dart';
@@ -94,7 +94,7 @@ class _NavBarState extends State<NavBar> {
                     child: Center(
                       child: Text(
                         (SeyirApp.tokenNotifier.value == true)
-                            ? _appToken.get('phone')
+                            ? '+993${_appToken.get('phone')}'
                             : 'Belgiňizi giriziň!',
                         textAlign: TextAlign.center,
                         style: TextStyle(

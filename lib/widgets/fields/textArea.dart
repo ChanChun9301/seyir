@@ -33,36 +33,12 @@ class _TextAreaState extends State<TextArea> {
       ),
       child: Column(
         children: [
-          // HtmlEditor(
-          //     controller: controller, //required
-
-          //     htmlEditorOptions: HtmlEditorOptions(
-          //       hint: "Your text here...",
-
-          //       mobileContextMenu: ContextMenu(),
-          //       //initalText: "text content initial, if any",
-          //     ),
-          //     otherOptions: OtherOptions(
-          //       decoration: BoxDecoration(color: Colors.white),
-          //       height: 400,
-          //     ),
-          //     htmlToolbarOptions: HtmlToolbarOptions(defaultToolbarButtons: [
-          //       StyleButtons(),
-          //       ParagraphButtons(lineHeight: false, caseConverter: false)
-          //     ]))
-          // Expanded(
-          //   child: QuillEditor.basic(
-          //     // controller: _controller,
-          //     configurations:
-          //         QuillEditorConfigurations(controller: _controller),
-          //   ),
-          // ),
           TextField(
             minLines: 5,
             controller: widget.descCtr,
             style: TextStyle(
               color: Theme.of(context).colorScheme.secondary,
-              fontSize: 12,
+              fontSize: 14,
               fontFamily: 'Bricolage',
             ),
             maxLines: 10,
@@ -90,10 +66,11 @@ class _TextAreaState extends State<TextArea> {
               fillColor: Theme.of(context).colorScheme.primaryContainer,
               labelText: "Maglumatlary...",
               labelStyle: TextStyle(
-                fontSize: 10,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: Theme.of(context).colorScheme.secondary,
               ),
+              
             ),
           ),
         ],

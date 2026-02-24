@@ -1,47 +1,54 @@
 // ignore_for_file: file_names, library_private_types_in_public_api, camel_case_types
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:seyir/pages/lists/address_list.dart';
+import 'package:seyir/pages/lists/category_list.dart';
 import 'package:seyir/pages/logist/create/logistaddress.dart';
 import 'package:seyir/pages/logist/create/logistcategory.dart';
+import 'package:seyir/api/fetch_logist.dart';
 import '../../../widgets/fields/price_text_field.dart';
 import 'dart:developer';
-import '../../../utils/dialogs.dart';
 import '../../../utils/constants.dart';
 import '../../../widgets/text.dart';
 import '../../../widgets/fields/phone_text_field.dart';
 import '../../../widgets/fields/textArea.dart';
 import '../../../widgets/fields/text_field.dart';
 import 'dart:io';
-import '../../../utils/getData.dart';
 import '../../../component/navbar.dart';
 import '../../../utils/models.dart';
 
-class CreateUpdateLog extends StatefulWidget {
-  final LogistDetailModel? logistData;
+class UpdateLogist extends StatefulWidget {
+  final int? id;
   final bool isEditing;
 
-  const CreateUpdateLog({super.key, this.logistData, this.isEditing = false});
+  const UpdateLogist({super.key, this.id, this.isEditing = false});
 
   @override
-  _CreateUpdateLogState createState() => _CreateUpdateLogState();
+  _UpdateLogistState createState() => _UpdateLogistState();
 }
 
-class _CreateUpdateLogState extends State<CreateUpdateLog>
+class _UpdateLogistState extends State<UpdateLogist>
     with SingleTickerProviderStateMixin {
+  late Future<LogistDetailModel> futureData;
+
   DateTime selectedDate = now;
   final ImagePicker _picker = ImagePicker();
   final List<dynamic> _imageFileList = [];
   final String defaultImagePath = 'assets/no-image.jpg';
+  List<String> deletedImageIds = []; // Pozuljak suratlaryň ID-leri
+  bool isMainImageDeleted = false;
+
   String suratText = '';
   bool _validate = false;
   bool selectedVip = false;
   bool selectedBring = false;
+  bool selectedIsClient = true;
   bool showSpinner = false;
+  bool isDataLoaded = false;
 
   // Контроллеры
   TextEditingController titleCtr = TextEditingController();
@@ -54,42 +61,90 @@ class _CreateUpdateLogState extends State<CreateUpdateLog>
   String author = '';
   final _appToken = Hive.box('apptoken');
 
-  List<SaylananCategory> selectedSubcategories = [];
-  List<SaylananSalgy> selectedSubaddresses = [];
+  List<SaylananCategory> selectedCategories = [];
+  List<SaylananSalgy> selectedAddresses = [];
 
   @override
   void initState() {
     super.initState();
-    author = _appToken.get('token');
-
-    // Если редактируем существующую запись, заполняем данные
-    if (widget.isEditing && widget.logistData != null) {
-      final data = widget.logistData!;
-      titleCtr.text = data.title;
-      descCtr.text = data.desc;
-      phoneCtr.text = data.phone;
-      whereCtr.text = data.where ?? '';
-      nirdenCtr.text = data.nirden ?? '';
-      priceCtr.text = data.price.toString();
-      selectedBring = data.isBring;
-      selectedDate = DateTime.parse(data.lastDate);
-
-      // Загружаем изображения если они есть
-      if (data.images.isNotEmpty) {
-        // Здесь нужно реализовать загрузку изображений из сети
-        // _loadNetworkImages(data.images);
-      }
-
-      // Загружаем категории и адреса
-      // _loadCategoriesAndAddresses(data);
+    author = _appToken.get('token', defaultValue: '');
+    futureData = getLogistDetailApi(widget.id!);
+    if (widget.isEditing && widget.id != null) {
+      _loadData(); // API-dan maglumat alyp doldurjak funksiýamyz
     }
   }
 
-  Future<String> _copyAssetToTemp(String assetPath) async {
-    final byteData = await rootBundle.load(assetPath);
-    final file = File('${(await getTemporaryDirectory()).path}/no-image.jpg');
-    await file.writeAsBytes(byteData.buffer.asUint8List());
-    return file.path;
+  Future<void> _loadData() async {
+    try {
+      // API-dan maglumaty garaşyp alýarys
+      LogistDetailModel data = await getLogistDetailApi(widget.id!);
+
+      // Gelen maglumaty meýdançalara ýerleşdirýäris
+      setState(() {
+        _fillFields(data);
+        log(data.toString());
+      });
+    } catch (e) {
+      debugPrint("Maglumat ýüklenende ýalňyşlyk: $e");
+      // Isleseňiz bärde ulanyja ýalňyşlyk barada dialog görkezip bilersiňiz
+    }
+  }
+
+  void _fillFields(LogistDetailModel data) {
+    if (isDataLoaded) return;
+
+    titleCtr.text = data.title;
+    descCtr.text = data.desc;
+    phoneCtr.text = data.phone;
+    whereCtr.text = data.where ?? '';
+    nirdenCtr.text = data.nirden ?? '';
+    priceCtr.text = data.price.toString();
+    selectedBring = data.isBring;
+    selectedDate = DateTime.parse(data.lastDate);
+    titleCtr.text = data.title;
+    descCtr.text = data.desc;
+    phoneCtr.text = data.phone;
+    whereCtr.text = data.where ?? '';
+    nirdenCtr.text = data.nirden ?? '';
+    priceCtr.text = data.price.toString();
+    selectedBring = data.isBring;
+    selectedDate = DateTime.parse(data.lastDate);
+
+    // Kategoriýany doldurmak
+    if (data.categoryName.isNotEmpty) {
+      selectedCategories = [
+        SaylananCategory(
+          id: int.tryParse(data.category_id) ?? 0,
+          name: data.categoryName,
+        ),
+      ];
+    }
+
+    // Salgyny doldurmak
+    if (data.addressName.isNotEmpty) {
+      selectedAddresses = [
+        SaylananSalgy(
+          id: int.tryParse(data.address_id) ?? 0,
+          name: data.addressName,
+        ),
+      ];
+    }
+
+    // Suratlary doldurmak (Köne URL-ler String hökmünde goşulýar)
+    _imageFileList.clear();
+    if (data.img.isNotEmpty) {
+      _imageFileList.add(data.img); // Bu String bolar
+    }
+
+    // 2. Goşmaça suratlary (images) goşmak.
+    // Bular eýýäm PK we URL bolan obyektler/maplar.
+    if (data.images.isNotEmpty) {
+      _imageFileList.addAll(data.images);
+    }
+    log(_imageFileList.toString());
+    log('Images:' + data.images.toString());
+
+    isDataLoaded = true;
   }
 
   void selectedImages() async {
@@ -104,12 +159,6 @@ class _CreateUpdateLogState extends State<CreateUpdateLog>
         _imageFileList.addAll(selectedImages);
       });
     }
-  }
-
-  void deletImage(int index) {
-    setState(() {
-      _imageFileList.removeAt(index);
-    });
   }
 
   Future<void> selectDateFunc(BuildContext context) async {
@@ -263,10 +312,10 @@ class _CreateUpdateLogState extends State<CreateUpdateLog>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     double h = MediaQuery.of(context).size.height;
-    double w = MediaQuery.of(context).size.width;
 
     return Scaffold(
       drawer: const NavBar(),
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
         title: Text(
           widget.isEditing ? 'Maglumat redaktirlemek' : 'Maglumat goşmak',
@@ -296,7 +345,6 @@ class _CreateUpdateLogState extends State<CreateUpdateLog>
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
         ),
       ),
-      backgroundColor: theme.colorScheme.surface,
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: h / 56.27),
@@ -330,28 +378,104 @@ class _CreateUpdateLogState extends State<CreateUpdateLog>
               SizedBox(height: h / 84.4),
 
               // Переключатель "Привезти/Забрать"
-              _buildBringSwitch(theme),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildBringSwitch(theme),
+                  SizedBox(width: 10),
+
+                  _buildClientSwitch(theme),
+                ],
+              ),
+
               SizedBox(height: h / 84.4),
 
               // Выбор адреса
-              _buildAddressSelector(theme),
-              SizedBox(height: h / 84.4),
-
-              // Выбор категории
-              _buildCategorySelector(theme),
-              SizedBox(height: h / 84.4),
+              _buildSelectionButton(
+                title:
+                    selectedAddresses.isEmpty
+                        ? 'Salgy saýla'
+                        : 'Saýlanan: ${selectedAddresses.first.name}',
+                icon: CupertinoIcons.location_solid,
+                onTap: _selectAddress,
+              ),
+              const SizedBox(height: 10),
+              _buildSelectionButton(
+                title:
+                    selectedCategories.isEmpty
+                        ? 'Kategoriýa saýla'
+                        : 'Saýlanan: ${selectedCategories.first.name}',
+                icon: CupertinoIcons.list_bullet,
+                onTap: _selectCategory,
+              ),
+              const SizedBox(height: 16),
 
               // Загрузка изображений
-              _buildImageUploader(theme, h),
+              _buildImagePicker(theme),
               SizedBox(height: h / 84.4),
 
               // Кнопка сохранения
-              _buildSaveButton(theme, w, h),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _postedData,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    widget.isEditing ? 'ÜÝTGETMELERI SAKLA' : 'ULAGY GOŞ',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _selectCategory() async {
+    // CategoryListPage-e gidýäris we netijä garaşýarys
+    final result = await Navigator.push<List<SaylananCategory>>(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => CategoryListPage(
+              queryName: 'logistika',
+            ), // 'ulaglar' seniň API slug-yň bolup biler
+      ),
+    );
+
+    // Eger kategoriýa saýlanan bolsa, ony setState bilen täzeleýäris
+    if (result != null && result.isNotEmpty) {
+      setState(() {
+        // Bizde diňe bir kategoriýa bolmaly (Radio button logikasy ýaly)
+        selectedCategories = [result.first];
+      });
+    }
+  }
+
+  Future<void> _selectAddress() async {
+    final result = await Navigator.push<List<SaylananSalgy>>(
+      context,
+      MaterialPageRoute(builder: (_) => const MainAddressPage()),
+    );
+
+    if (result != null && result.isNotEmpty) {
+      setState(() {
+        // Bizde diňe bir salgy bolmaly bolsa, listi täzeleýäris
+        selectedAddresses = [result.first];
+      });
+    }
   }
 
   Widget _buildDateSelector(ThemeData theme, BuildContext context) {
@@ -399,7 +523,7 @@ class _CreateUpdateLogState extends State<CreateUpdateLog>
           ),
           const SizedBox(width: 10),
           Text(
-            'Alyp gitmelimi\t / \tGetirmelimi',
+            'Alyp gitmeli\t / \tGetirmeli',
             style: TextStyle(
               color: theme.colorScheme.onSecondary,
               fontFamily: 'Bricolage',
@@ -411,376 +535,323 @@ class _CreateUpdateLogState extends State<CreateUpdateLog>
     );
   }
 
-  Widget _buildAddressSelector(ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InkWell(
-          onTap: () async {
-            final result = await Navigator.push<List<SaylananSalgy>>(
-              context,
-              MaterialPageRoute(builder: (_) => LogistAddressPage()),
-            );
-            if (result != null) {
-              setState(() => selectedSubaddresses = result);
-            }
-          },
-          child: Container(
-            height: 30,
-            padding: const EdgeInsets.only(left: 10, right: 10),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Salgyny saýla',
-                  style: TextStyle(
-                    fontFamily: 'Bricolage',
-                    fontSize: 10,
-                    color: theme.colorScheme.secondary,
-                  ),
-                ),
-              ],
+  Widget _buildClientSwitch(ThemeData theme) {
+    return SizedBox(
+      height: 35,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Transform.scale(
+            scale: 1,
+            child: Switch(
+              value: selectedIsClient,
+              onChanged: (bool val) => setState(() => selectedIsClient = val),
+              activeColor: theme.colorScheme.primary,
+              inactiveThumbColor: Colors.blueGrey.shade600,
             ),
           ),
-        ),
-        if (selectedSubaddresses.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Wrap(
-              spacing: 8.0,
-              children:
-                  selectedSubaddresses
-                      .map(
-                        (sub) => Chip(
-                          label: Text(sub.name),
-                          deleteIcon: const Icon(
-                            Icons.close_outlined,
-                            color: Colors.red,
-                          ),
-                          onDeleted:
-                              () => setState(
-                                () => selectedSubaddresses.removeWhere(
-                                  (item) => item.id == sub.id,
-                                ),
-                              ),
-                        ),
-                      )
-                      .toList(),
+          const SizedBox(width: 10),
+          Text(
+            'Ulag\t / \tMüşderi',
+            style: TextStyle(
+              color: theme.colorScheme.onSecondary,
+              fontFamily: 'Bricolage',
+              fontSize: 12,
             ),
           ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildCategorySelector(ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InkWell(
-          onTap: () async {
-            final result = await Navigator.push<List<SaylananCategory>>(
-              context,
-              MaterialPageRoute(builder: (_) => LogistCategoryPage()),
-            );
-            if (result != null) {
-              setState(() => selectedSubcategories = result);
-            }
-          },
-          child: Container(
-            height: 30,
-            padding: const EdgeInsets.only(left: 10, right: 10),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Kategoriýa',
-                  style: TextStyle(
-                    fontFamily: 'Bricolage',
-                    fontSize: 10,
-                    color: theme.colorScheme.secondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (selectedSubcategories.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Wrap(
-              spacing: 8.0,
-              children:
-                  selectedSubcategories
-                      .map(
-                        (sub) => Chip(
-                          label: Text(sub.name),
-                          deleteIcon: const Icon(
-                            Icons.close_outlined,
-                            color: Colors.red,
-                          ),
-                          onDeleted:
-                              () => setState(
-                                () => selectedSubcategories.removeWhere(
-                                  (item) => item.id == sub.id,
-                                ),
-                              ),
-                        ),
-                      )
-                      .toList(),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildImageUploader(ThemeData theme, double h) {
+  Widget _buildImagePicker(ThemeData theme) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      height: _imageFileList.length > 3 ? 450 : 250,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: theme.colorScheme.primaryContainer,
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                (_imageFileList.length <= 5)
-                    ? '${_imageFileList.length} sany surat'
-                    : 'siz 5-den artyk surat saýlap bilmeýärsiňiz',
-                style: TextStyle(
-                  color: theme.colorScheme.secondary,
-                  fontFamily: 'Bricolage',
-                  fontSize: 10,
-                ),
+                "${_imageFileList.length}/5 Surat",
+                style: const TextStyle(fontSize: 12),
               ),
               IconButton(
+                onPressed: selectedImages,
                 icon: Icon(
-                  CupertinoIcons.camera_circle_fill,
+                  CupertinoIcons.camera_fill,
                   color: theme.colorScheme.secondary,
-                  size: 24,
                 ),
-                onPressed: () {
-                  if (_imageFileList.length < 5) {
-                    selectedImages();
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Surat saýlamak limidi doly'),
-                      ),
-                    );
-                  }
-                },
               ),
             ],
           ),
-          const SizedBox(height: 5),
-          Expanded(
-            child: GridView.builder(
-              itemCount: _imageFileList.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-              ),
-              itemBuilder: (BuildContext context, int index) {
-                return Stack(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(2),
-                      child: Image.file(
-                        File(_imageFileList[index].path),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    Positioned(
-                      right: 3,
-                      top: 3,
-                      child: Container(
-                        height: 30,
-                        width: 30,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(50),
+          if (_imageFileList.isNotEmpty)
+            SizedBox(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _imageFileList.length,
+                itemBuilder: (context, index) {
+                  final image = _imageFileList[index];
+
+                  // Surat URL-ini anyklamak
+                  String imageUrl = "";
+                  if (image is String) {
+                    imageUrl = image; // Esasy surat (img)
+                  } else if (image is ImageModel) {
+                    imageUrl = image.url; // Goşmaça surat (obyekt)
+                  } else if (image is XFile) {
+                    imageUrl = image.path; // Täze saýlanan surat
+                  }
+
+                  return Stack(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child:
+                              image is XFile
+                                  ? Image.file(
+                                    File(image.path),
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                  )
+                                  : Image.network(
+                                    imageUrl,
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            Image.asset(
+                                              defaultImagePath,
+                                              width: 80,
+                                              height: 80,
+                                            ),
+                                  ),
                         ),
-                        child: IconButton(
-                          onPressed: () => deletImage(index),
-                          icon: Icon(
-                            CupertinoIcons.delete,
-                            size: 10,
-                            color: Colors.red[600],
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              final removedItem = _imageFileList[index];
+
+                              if (removedItem is String) {
+                                // Eger String bolsa, bu hemişe esasy surat (img) hasaplanýar
+                                isMainImageDeleted = true;
+                              } else if (removedItem is ImageModel) {
+                                // Goşmaça surat bolsa, PK-syny sanawa goşýarys
+                                deletedImageIds.add(removedItem.pk.toString());
+                              }
+
+                              _imageFileList.removeAt(index);
+                            });
+                          },
+                          child: const CircleAvatar(
+                            radius: 10,
+                            backgroundColor: Colors.red,
+                            child: Icon(
+                              Icons.close,
+                              size: 12,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                );
-              },
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildSaveButton(ThemeData theme, double w, double h) {
+  Widget _buildSelectionButton({
+    required String title,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: _buildSelectionContainer(context, title, icon),
+    );
+  }
+
+  Widget _buildSelectionContainer(
+    BuildContext context,
+    String text,
+    IconData icon,
+  ) {
     return Container(
-      padding: EdgeInsets.only(top: h / 84.4, bottom: 12),
-      width: w,
-      height: 75,
-      child: ElevatedButton(
-        onPressed: () async {
-          if (_validateForm()) {
-            setState(() => showSpinner = true);
-            try {
-              if (widget.isEditing) {
-                await _updateLogist();
-              } else {
-                await _createLogist();
-              }
-              Navigator.pushNamed(context, '/added_list');
-            } catch (e) {
-              log('Error: $e');
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('Ýalňyşlyk: $e')));
-            } finally {
-              setState(() => showSpinner = false);
-            }
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: theme.colorScheme.primary,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
+      height: 45,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromRGBO(99, 99, 99, 0.1),
+            blurRadius: 4,
+            offset: Offset(0, 2),
           ),
-        ),
-        child:
-            showSpinner
-                ? const CircularProgressIndicator(color: Colors.white)
-                : Text(
-                  widget.isEditing
-                      ? 'Üýtgetmeleri ýatda sakla'
-                      : 'Maglumaty ýatda sakla',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: "Bricolage",
-                    letterSpacing: 1,
-                  ),
-                ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontFamily: "Bricolage",
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
+        ],
       ),
     );
   }
 
   bool _validateForm() {
-    if (priceCtr.text.isEmpty ||
-        phoneCtr.text.isEmpty ||
-        titleCtr.text.isEmpty ||
-        descCtr.text.isEmpty ||
-        selectedSubaddresses.isEmpty ||
-        selectedSubcategories.isEmpty) {
+    String errorMessage = "";
+
+    // 1. Esasy tekst meýdançalaryny barlamak
+    if (titleCtr.text.trim().isEmpty) {
+      errorMessage = "Sözbaşy giriziň!";
+    } else if (priceCtr.text.trim().isEmpty) {
+      errorMessage = "Bahany giriziň!";
+    } else if (phoneCtr.text.trim().length < 8) {
+      errorMessage = "Telefon belgisini dogry giriziň!";
+    } else if (descCtr.text.trim().isEmpty) {
+      errorMessage = "Düşündiriş ýazyň!";
+    }
+    // 2. Kategoriýa we Salgy barlagy
+    else if (selectedCategories.isEmpty) {
+      errorMessage = "Kategoriýa saýlaň!";
+    } else if (selectedAddresses.isEmpty) {
+      errorMessage = "Salgyny saýlaň!";
+    }
+    // 3. Logistika üçin mahsus barlaglar (Nirden/Nire)
+    else if (whereCtr.text.trim().isEmpty || nirdenCtr.text.trim().isEmpty) {
+      errorMessage = "Ugraljak we baryljak ýeri giriziň!";
+    }
+
+    // Netije
+    if (errorMessage.isNotEmpty) {
       setState(() {
-        _validate = true;
-        showPostDialog(context);
+        _validate = true; // TextFormField-laryň errorText-ini janlandyrmak üçin
       });
+
+      // Ulanyja Dialog ýa-da SnackBar arkaly anyk näme ýalňyşdygyny aýtmak
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      // Eger öňki Dialogyňyz gerek bolsa, ony hem çagyryp bilersiňiz
+      // showPostDialog(context);
+
       return false;
     }
+
     return true;
   }
 
-  Future<void> _createLogist() async {
-    if (_imageFileList.isEmpty) {
-      String tempFilePath = await _copyAssetToTemp(defaultImagePath);
-      _imageFileList.add(XFile(tempFilePath));
-    }
+  Future<void> _postedData() async {
+    // 1. Validasiýa barlagy
+    if (!_validateForm()) return;
 
-    FormData formData = FormData.fromMap({
-      'name': titleCtr.text,
-      'category': selectedSubcategories.first.id.toString(),
-      'author': author,
-      'where': whereCtr.text,
-      'nirden': nirdenCtr.text,
-      'last_date': selectedDate.toString().substring(0, 10),
-      'bring': selectedBring,
-      'address': selectedSubaddresses.first.id.toString(),
-      'phone': phoneCtr.text.substring(3),
-      'img': await MultipartFile.fromFile(_imageFileList[0].path),
-      'text': descCtr.text,
-      'price': priceCtr.text,
-      'vip': selectedVip,
-      'images': [
-        for (final image in _imageFileList.where((image) => image != null))
-          await MultipartFile.fromFile(image!.path, filename: image.name),
-      ],
-    });
+    setState(() => showSpinner = true);
 
-    await _sendRequest('$baseUrl/logist-list/', formData);
-  }
-
-  Future<void> _updateLogist() async {
-    if (widget.logistData == null) return;
-
-    FormData formData = FormData.fromMap({
-      'name': titleCtr.text,
-      'category': selectedSubcategories.first.id.toString(),
-      'where': whereCtr.text,
-      'nirden': nirdenCtr.text,
-      'last_date': selectedDate.toString().substring(0, 10),
-      'bring': selectedBring,
-      'address': selectedSubaddresses.first.id.toString(),
-      'phone': phoneCtr.text.substring(3),
-      'text': descCtr.text,
-      'price': priceCtr.text,
-      'vip': selectedVip,
-      if (_imageFileList.isNotEmpty)
-        'img': await MultipartFile.fromFile(_imageFileList[0].path),
-      if (_imageFileList.length > 1)
-        'images': [
-          for (final image in _imageFileList.skip(1))
-            await MultipartFile.fromFile(image.path, filename: image.name),
-        ],
-    });
-
-    await _sendRequest(
-      '$baseUrl/logist-list/${widget.logistData!.id}/',
-      formData,
-      isPut: true,
-    );
-  }
-
-  Future<void> _sendRequest(
-    String url,
-    FormData formData, {
-    bool isPut = false,
-  }) async {
-    Dio dio = Dio();
     try {
-      Response response =
-          isPut
-              ? await dio.put(url, data: formData)
-              : await dio.post(url, data: formData);
+      // 2. Esasy maglumatlar kartasy (Map)
+      Map<String, dynamic> dataMap = {
+        'name': titleCtr.text,
+        'category': selectedCategories.first.id,
+        'where': whereCtr.text,
+        'nirden': nirdenCtr.text,
+        'last_date': selectedDate.toString().substring(0, 10),
+        'bring': selectedBring,
+        'is_client': selectedIsClient,
+        'address': selectedAddresses.first.id,
+        'phone': phoneCtr.text.replaceAll(RegExp(r'[^0-9]'), ''), // Diňe sanlar
+        'text': descCtr.text,
+        'price': priceCtr.text,
+        'vip': selectedVip,
+        // Eger öňki kodlaryňyzda bar bolsa, bularam goşup bilersiňiz:
+        'delete_images': deletedImageIds.join(','),
+        'is_main_image_deleted': isMainImageDeleted ? "true" : "false",
+      };
 
-      log(response.toString());
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Üstünlikli!')));
+      // Multipart üçin FormData taýýarlamak
+      FormData formData = FormData.fromMap(dataMap);
+
+      // 3. Suratlary işlemek (Dynamic Handling)
+      // Täze suratlary (XFile) goşmak
+      for (var file in _imageFileList) {
+        if (file is XFile) {
+          var multipartFile = await MultipartFile.fromFile(
+            file.path,
+            filename: file.path.split('/').last,
+          );
+          formData.files.add(MapEntry('images', multipartFile));
+        }
+      }
+
+      // 4. URL we Metod kesgitlemek
+      String url =
+          '$baseUrl/logistika/update/${widget.id}/'; // create URL-iňizi ýazyň
+
+      // Django/DRF Multipart PATCH soraglaryny POST arkaly kabul edip bilýär
+      Options options = Options(
+        method: 'PATCH',
+        headers: {"Authorization": "Bearer $author"}, // Token bar bolsa
+      );
+
+      // 5. Sorag ibermek
+      Response response = await Dio().request(
+        url,
+        data: formData,
+        options: options,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Täzelendi!')));
+        Navigator.pop(
+          context,
+          true,
+        ); // Sahypany ýap we yzyna 'true' ugrat (Refresh üçin)
+      }
     } on DioException catch (e) {
       log('Dio Error: ${e.response?.data}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Ýalňyşlyk: ${e.response?.data ?? e.message}')),
       );
-      rethrow;
+    } finally {
+      setState(() => showSpinner = false);
     }
   }
 }

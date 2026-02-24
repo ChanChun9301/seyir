@@ -14,9 +14,12 @@ class CarouselControl extends GetxController {
     final data = json.decode(response.body) as List<dynamic>;
     // print(data);
     if (data.isNotEmpty) {
-      _carouselItems.value = (data)
-          .map((item) => CarouselPage.fromJson(item as Map<String, dynamic>))
-          .toList();
+      _carouselItems.value =
+          (data)
+              .map(
+                (item) => CarouselPage.fromJson(item as Map<String, dynamic>),
+              )
+              .toList();
     } else {
       // _carouselItems
     }

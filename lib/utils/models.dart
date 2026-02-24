@@ -12,7 +12,10 @@ class ImageModel {
 
   factory ImageModel.fromJson(Map<String, dynamic> json) {
     return ImageModel(
-      pk: (json['pk'] is int) ? json['pk'] : int.tryParse(json['pk']?.toString() ?? '') ?? 0,
+      pk:
+          (json['pk'] is int)
+              ? json['pk']
+              : int.tryParse(json['pk']?.toString() ?? '') ?? 0,
       url: json['url']?.toString() ?? '',
     );
   }
@@ -44,7 +47,154 @@ class BasePageModel {
 
   String get createdString => DateFormat('yyyy-MM-dd').format(created);
 }
+// ========================= SPARE PAGE MODEL =========================
+
+class SparePageModel extends BasePageModel {
+  String addressName;
+  String categoryName;
+
+  String address_id;
+  String category_id;
+
+  String? partNumber; // Täze
+  int? year; // Täze
+  String condition; // Täze
+  String compatibility; // Täze
+
+  SparePageModel({
+    required String id,
+    required String title,
+    required String phone,
+    required String price,
+    required bool checked,
+    required String desc,
+    required String img,
+    required DateTime created,
+    required this.categoryName,
+    required this.addressName,
+    required this.category_id,
+    required this.address_id,
+    this.partNumber,
+    this.year,
+    required this.condition,
+    required this.compatibility,
+  }) : super(
+         id: id,
+         title: title,
+         phone: phone,
+         price: price,
+         desc: desc,
+         img: img,
+         created: created,
+         checked: checked,
+       );
+
+  factory SparePageModel.fromJson(Map<String, dynamic> json) {
+    // Django-dan gelýän 'condition' bahasyny türkmençä öwürmek
+    String rawCondition = json["condition"]?.toString() ?? 'used';
+    String translatedCondition;
+
+    switch (rawCondition) {
+      case 'new':
+        translatedCondition = 'Täze';
+        break;
+      case 'refurbished':
+        translatedCondition = 'Dikelden';
+        break;
+      default:
+        translatedCondition = 'Ulanylan';
+    }
+
+    return SparePageModel(
+      id: json["pk"].toString(),
+      title: json["name"]?.toString() ?? '',
+      phone: json["phone"]?.toString() ?? '',
+      price: json["price"]?.toString() ?? '',
+      desc: json["text"]?.toString() ?? '',
+      img: json["img"] ?? json["thumbnail"] ?? '',
+      checked: json["checked"] ?? false,
+      created: DateTime.tryParse(json['created'] ?? '') ?? DateTime.now(),
+      categoryName: json["category_name"]?.toString() ?? '',
+      addressName: json["address_name"]?.toString() ?? '',
+      category_id: json["category_id"]?.toString() ?? '',
+      address_id: json["address__id"]?.toString() ?? '',
+      compatibility: json["compatibility"]?.toString() ?? '',
+      // Täze meýdanlar:
+      partNumber: json["part_number"]?.toString(),
+      year:
+          json["year"] is int
+              ? json["year"]
+              : int.tryParse(json["year"]?.toString() ?? ''),
+      condition: translatedCondition,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "title": title,
+    "phone": phone,
+    "price": price,
+    "desc": desc,
+    "img": img,
+    "checked": checked,
+    "address_name": addressName,
+    "category_name": categoryName,
+    "created": created.toIso8601String(),
+    "part_number": partNumber,
+    "year": year,
+    "condition": condition,
+  };
+}
+
 // ========================= PAGE MODEL =========================
+
+class ServicePageModel {
+  final String id;
+  final String title;
+  final String phone;
+  final String price;
+  final String desc;
+  final bool checked;
+  final String img;
+  final String categoryName;
+  final String addressName;
+  final String category_id;
+  final String address_id;
+  final DateTime created;
+
+  ServicePageModel({
+    required this.id,
+    required this.title,
+    required this.phone,
+    required this.price,
+    required this.desc,
+    required this.img,
+    required this.categoryName,
+    required this.checked,
+    required this.category_id,
+    required this.addressName,
+    required this.address_id,
+    required this.created,
+  });
+
+  factory ServicePageModel.fromJson(Map<String, dynamic> json) {
+    return ServicePageModel(
+      id: json["pk"].toString(),
+      title: json["name"] ?? '',
+      phone: json["phone"] ?? '',
+      price: json["price"]?.toString() ?? '0',
+      desc: json["text"] ?? '',
+      img: json["img"] ?? '',
+      checked: json["checked"] ?? '',
+      categoryName: json["category_name"] ?? '',
+      addressName: json["address_name"] ?? '',
+      category_id: json["category_id"] ?? '',
+      address_id: json["address_id"] ?? '',
+      created: DateTime.tryParse(json['created'] ?? '') ?? DateTime.now(),
+    );
+  }
+}
 
 class PageModel extends BasePageModel {
   String addressName;
@@ -62,15 +212,15 @@ class PageModel extends BasePageModel {
     required this.categoryName,
     required this.addressName,
   }) : super(
-          id: id,
-          title: title,
-          phone: phone,
-          price: price,
-          desc: desc,
-          img: img,
-          created: created,
-          checked: checked,
-        );
+         id: id,
+         title: title,
+         phone: phone,
+         price: price,
+         desc: desc,
+         img: img,
+         created: created,
+         checked: checked,
+       );
 
   factory PageModel.fromJson(Map<String, dynamic> json) {
     return PageModel(
@@ -88,17 +238,17 @@ class PageModel extends BasePageModel {
   }
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "phone": phone,
-        "price": price,
-        "desc": desc,
-        "img": img,
-        "checked": checked,
-        "address_name": addressName,
-        "category_name": categoryName,
-        "created": created.toIso8601String(),
-      };
+    "id": id,
+    "title": title,
+    "phone": phone,
+    "price": price,
+    "desc": desc,
+    "img": img,
+    "checked": checked,
+    "address_name": addressName,
+    "category_name": categoryName,
+    "created": created.toIso8601String(),
+  };
 }
 
 // ========================= TOP PAGE MODEL =========================
@@ -116,15 +266,15 @@ class TopPageModel extends BasePageModel {
     required DateTime created,
     required this.addressName,
   }) : super(
-          id: id,
-          title: title,
-          phone: phone,
-          price: price,
-          desc: desc,
-          img: img,
-          created: created,
-          checked: checked,
-        );
+         id: id,
+         title: title,
+         phone: phone,
+         price: price,
+         desc: desc,
+         img: img,
+         created: created,
+         checked: checked,
+       );
 
   factory TopPageModel.fromJson(Map<String, dynamic> json) {
     return TopPageModel(
@@ -141,16 +291,16 @@ class TopPageModel extends BasePageModel {
   }
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "phone": phone,
-        "price": price,
-        "desc": desc,
-        "img": img,
-        "checked": checked,
-        "address_name": addressName,
-        "created": created.toIso8601String(),
-      };
+    "id": id,
+    "title": title,
+    "phone": phone,
+    "price": price,
+    "desc": desc,
+    "img": img,
+    "checked": checked,
+    "address_name": addressName,
+    "created": created.toIso8601String(),
+  };
 }
 
 // ========================= LOGIST PAGE MODEL =========================
@@ -213,22 +363,22 @@ class LogistPageModel {
   String get createdString => DateFormat('yyyy-MM-dd').format(created);
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "phone": phone,
-        "where": where,
-        "nirden": nirden,
-        "last_date": lastDate,
-        "bring": isBring,
-        "client": isClient,
-        "price": price,
-        "desc": desc,
-        "img": img,
-        "checked": checked,
-        "category_name": categoryName,
-        "address_name": addressName,
-        "created": created.toIso8601String(),
-      };
+    "id": id,
+    "title": title,
+    "phone": phone,
+    "where": where,
+    "nirden": nirden,
+    "last_date": lastDate,
+    "bring": isBring,
+    "client": isClient,
+    "price": price,
+    "desc": desc,
+    "img": img,
+    "checked": checked,
+    "category_name": categoryName,
+    "address_name": addressName,
+    "created": created.toIso8601String(),
+  };
 }
 
 class LogistDetailModel {
@@ -252,6 +402,8 @@ class LogistDetailModel {
   double? longitude;
   String categoryName; // Пустой список
   String addressName;
+  String category_id; // Пустой список
+  String address_id;
 
   LogistDetailModel({
     required this.images,
@@ -274,6 +426,8 @@ class LogistDetailModel {
     required this.longitude,
     required this.categoryName,
     required this.addressName,
+    required this. category_id, // Пустой список
+    required this. address_id,
   });
 
   factory LogistDetailModel.fromJson(Map<String, dynamic> json) =>
@@ -285,7 +439,7 @@ class LogistDetailModel {
             (json["images"] as List? ?? [])
                 .map((e) => ImageModel.fromJson(e as Map<String, dynamic>))
                 .toList(),
-        addressName: json["address"] ?? '',
+        addressName: json["address_name"] ?? '',
         desc: json["text"] ?? '',
         phone: json["phone"]?.toString() ?? '',
         lastDate: json["last_date"] ?? '',
@@ -298,7 +452,9 @@ class LogistDetailModel {
         created: DateTime.tryParse(json["created"] ?? '') ?? DateTime.now(),
         img: json["img"] ?? '',
         checked: json["checked"] ?? false,
-        categoryName: json["category"] ?? '',
+        categoryName: json["category_name"] ?? '',
+        category_id: json["category_id"] ?? '',// Пустой список
+        address_id: json["address_id"] ?? '',
         latitude:
             json["latitude"] != null
                 ? double.tryParse(json["latitude"].toString())
@@ -505,10 +661,9 @@ class TopDetailModel {
       price: json["price"]?.toString() ?? '',
       desc: removeHtmlTags(json["text"] ?? ''),
       img: json["img"] ?? '',
-      images: (json["images"] as List?)
-              ?.map((e) => e["url"].toString())
-              .toList() 
-          ?? [],
+      images:
+          (json["images"] as List?)?.map((e) => e["url"].toString()).toList() ??
+          [],
       created: DateTime.tryParse(json['created'] ?? '') ?? DateTime.now(),
       address: json["address_name"] ?? '',
       category: json["category"] ?? '',
@@ -519,97 +674,193 @@ class TopDetailModel {
   String get createdString => DateFormat('yyyy-MM-dd').format(created);
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "phone": phone,
-        "price": price,
-        "desc": desc,
-        "img": img,
-        "images": images,
-        "category": category,
-        "address": address,
-        "thumbnail": thumbnail,
-        "created": created.toIso8601String(),
-      };
+    "id": id,
+    "title": title,
+    "phone": phone,
+    "price": price,
+    "desc": desc,
+    "img": img,
+    "images": images,
+    "category": category,
+    "address": address,
+    "thumbnail": thumbnail,
+    "created": created.toIso8601String(),
+  };
 }
 
+//------------------------------------------------------------------------
+
 class CarDetailModel {
-  String id;
-  String title;
-  String desc;
-  String img;
-  List<String> images;
-  String phone;
+  int pk; // JSON-da "pk": 1
+  String name;
+  int? year;
+  String? color;
+  String? engineVolume;
+  int? mileage;
+  String? gearbox;
+  String? fuelType;
   String price;
-  DateTime created;
-  String address;
-  String currentAddress;
-  String category;
-  double? latitude;
-  double? longitude;
-  String thumbnail;
-  bool checked;
+  String? vinCode;
+  String? description;
+  String addressName;
+  String categoryName;
+  String address_id;
+  String category_id;
+  String phone;
+  String img;
+  List<ImageModel> images;
+  // ... beýleki meýdançalar
 
   CarDetailModel({
-    required this.id,
-    required this.title,
-    required this.desc,
+    required this.pk,
+    required this.name,
+    this.year,
+    this.color,
+    this.engineVolume,
+    this.mileage,
+    this.gearbox,
+    this.fuelType,
+    required this.price,
+    this.vinCode,
+    this.description,
+    required this.addressName,
+    required this.categoryName,
+    required this.address_id,
+    required this.category_id,
+    required this.phone,
     required this.img,
     required this.images,
-    required this.phone,
-    required this.price,
-    required this.created,
-    required this.address,
-    required this.currentAddress,
-    required this.category,
-    required this.latitude,
-    required this.longitude,
-    required this.thumbnail,
-    required this.checked,
   });
 
   factory CarDetailModel.fromJson(Map<String, dynamic> json) {
     return CarDetailModel(
+      pk: json["pk"],
+      name: json["name"] ?? '',
+      year: json["year"],
+      color: json["color"]?.toString(),
+      engineVolume: json["engine_volume"]?.toString(),
+      mileage: json["mileage"],
+      gearbox: json["gearbox"]?.toString(),
+      fuelType: json["fuel_type"]?.toString(),
+      price: json["price"]?.toString() ?? '0',
+      vinCode: json["vin_code"],
+      description: json["description"],
+      addressName: json["address_name"] ?? '',
+      categoryName: json["category_name"] ?? '',
+      address_id: json["address_id"] ?? '',
+      category_id: json["category_id"] ?? '',
+      phone: json["phone"] ?? '',
+      img: json["img"] ?? '',
+      images:
+          (json["images"] as List? ?? [])
+              .map((e) => ImageModel.fromJson(e))
+              .toList(),
+    );
+  }
+}
+
+class SpareImageObject {
+  final int id;
+  final String url;
+
+  SpareImageObject({required this.id, required this.url});
+
+  factory SpareImageObject.fromJson(Map<String, dynamic> json) {
+    return SpareImageObject(
+      id: json['id'] ?? 0,
+      url: json['url'] ?? json['image'] ?? '',
+    );
+  }
+}
+
+class SpareDetailModel {
+  String id;
+  String title;
+  String desc;
+  String img;
+  List<ImageModel> images;
+  String phone;
+  String price;
+  DateTime created;
+  String address;
+  String category;
+  String address_id;
+  String category_id;
+  // Täze zapçast meýdanlary
+  String? partNumber;
+  int? year;
+  String? condition;
+  String? compatibility;
+  final List<SpareImageObject>? imagesObjects;
+
+  SpareDetailModel({
+    required this.id,
+    required this.title,
+    required this.phone,
+    required this.price,
+    required this.desc,
+    required this.img,
+    required this.images,
+    required this.created,
+    required this.address,
+    required this.category,
+    required this.address_id,
+    required this.category_id,
+    this.partNumber,
+    this.year,
+    this.condition,
+    this.compatibility,
+    this.imagesObjects,
+  });
+
+  factory SpareDetailModel.fromJson(Map<String, dynamic> json) {
+    // Suratlary işlemek: Django-dan "url" ýa-da "image" açary bilen gelip biler
+
+    // Ýagdaýy (Condition) terjime etmek
+    return SpareDetailModel(
       id: json["pk"].toString(),
       title: json["name"] ?? '',
-      desc: removeHtmlTags(json["text"] ?? ''),
-      img: json["img"] ?? '',
-      images: (json["images"] as List?)
-              ?.map((e) => e["url"].toString())
-              .toList() 
-          ?? [],
       phone: json["phone"]?.toString() ?? '',
       price: json["price"]?.toString() ?? '',
-      created: DateTime.tryParse(json["created"] ?? '') ?? DateTime.now(),
-      address: json["address_name"] ?? '',
-      currentAddress: json["current_address_name"] ?? '',
-      category: json["category_name"] ?? '',
-      latitude: json["latitude"] != null ? double.tryParse(json["latitude"].toString()) : null,
-      longitude: json["longitude"] != null ? double.tryParse(json["longitude"].toString()) : null,
-      thumbnail: json["thumbnail_url"] ?? '',
-      checked: json["checked"] ?? false,
+      // Eger HTML tegleri bar bolsa öňki funksiýaňy ulanýarsyň
+      desc: json["text"] != null ? removeHtmlTags(json["text"]) : '',
+      img: json["img"] ?? '',
+      images:
+          (json["images"] as List? ?? [])
+              .map((e) => ImageModel.fromJson(e))
+              .toList(),
+      created: DateTime.tryParse(json['created'] ?? '') ?? DateTime.now(),
+      // Django-da 'address_name' we 'category_name' ulanýan bolsaň şony ýaz
+      address: json["address_name"] ?? json["address"] ?? '',
+      category: json["category_name"] ?? json["category"] ?? '',
+      address_id: json["address_id"] ?? json["address"] ?? '',
+      category_id: json["category_id"] ?? json["category"] ?? '',
+      // Täze meýdanlar
+      partNumber: json["part_number"]?.toString() ?? '-',
+      compatibility: json["compatibility"]?.toString() ?? '',
+      year:
+          json["year"] is int
+              ? json["year"]
+              : int.tryParse(json["year"]?.toString() ?? ''),
+      condition: json["condition"]?.toString() ?? 'used',
     );
   }
 
-  String get createdString => DateFormat('yyyy-MM-dd').format(created);
-
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "desc": desc,
-        "img": img,
-        "images": images,
-        "phone": phone,
-        "price": price,
-        "created": created.toIso8601String(),
-        "address": address,
-        "currentAddress": currentAddress,
-        "category": category,
-        "latitude": latitude,
-        "longitude": longitude,
-        "thumbnail": thumbnail,
-        "checked": checked,
-      };
+    "id": id,
+    "title": title,
+    "phone": phone,
+    "price": price,
+    "desc": desc,
+    "img": img,
+    "images": images,
+    "category": category,
+    "address": address,
+    "created": created.toIso8601String(),
+    "part_number": partNumber,
+    "year": year,
+    "condition": condition,
+  };
 }
 
 class DetailModel {
@@ -617,12 +868,14 @@ class DetailModel {
   String title;
   String desc;
   String img;
-  List<String> images;
+  List<ImageModel> images;
   String phone;
   String price;
   DateTime created;
   String address;
   String category;
+  String address_id;
+  String category_id;
 
   DetailModel({
     required this.id,
@@ -635,6 +888,8 @@ class DetailModel {
     required this.created,
     required this.address,
     required this.category,
+    required this.address_id,
+    required this.category_id,
   });
 
   factory DetailModel.fromJson(Map<String, dynamic> json) => DetailModel(
@@ -644,10 +899,15 @@ class DetailModel {
     price: json["price"] ?? '',
     desc: removeHtmlTags(json["text"] ?? ''),
     img: json["img"] ?? '',
-    images: (json["images"] as List).map((e) => e["url"].toString()).toList(),
+    images:
+        (json["images"] as List? ?? [])
+            .map((e) => ImageModel.fromJson(e))
+            .toList(),
     created: DateTime.tryParse(json['created'] ?? '') ?? DateTime.now(),
-    address: json["address"] ?? '',
-    category: json["category"] ?? '',
+    address: json["address_name"] ?? '',
+    category: json["category_name"] ?? '',
+    address_id: json["address_id"] ?? '',
+    category_id: json["category_id"] ?? '',
   );
 
   String get createdString => DateFormat('yyyy-MM-dd').format(created);
@@ -662,6 +922,8 @@ class DetailModel {
     "images": images,
     "category": category,
     "address": address,
+    "category_id": category_id,
+    "address_id": address_id,
     "created": created.toIso8601String(),
   };
 }
@@ -721,14 +983,27 @@ class PostDetailModel {
   };
 }
 
+//---------------------------------------
+
 class CategoryPage {
   String id;
   String title;
+  final List<SubCategory> subcategories;
 
-  CategoryPage({required this.id, required this.title});
+  CategoryPage({
+    required this.id,
+    required this.title,
+    required this.subcategories,
+  });
 
-  factory CategoryPage.fromJson(Map<String, dynamic> json) =>
-      CategoryPage(id: json["pk"].toString(), title: json["name"]);
+  factory CategoryPage.fromJson(Map<String, dynamic> json) => CategoryPage(
+    id: json["pk"].toString(),
+    title: json["name"],
+    subcategories:
+        (json['subcategories'] as List)
+            .map((e) => SubCategory.fromJson(e))
+            .toList(),
+  );
   Map<String, dynamic> toJson() => {"id": id, "title": title};
 }
 
@@ -756,37 +1031,14 @@ class SaylananSalgy {
       SaylananSalgy(id: json['id'], name: json['name']);
 }
 
-class LogistCategory {
-  final int pk;
-  final String name;
-  final List<LogistSubCategory> subcategories;
-
-  LogistCategory({
-    required this.pk,
-    required this.name,
-    required this.subcategories,
-  });
-
-  factory LogistCategory.fromJson(Map<String, dynamic> json) {
-    return LogistCategory(
-      pk: json['pk'],
-      name: json['name'],
-      subcategories:
-          (json['subcategories'] as List)
-              .map((e) => LogistSubCategory.fromJson(e))
-              .toList(),
-    );
-  }
-}
-
-class LogistSubCategory {
+class SubCategory {
   final int pk;
   final String name;
 
-  LogistSubCategory({required this.pk, required this.name});
+  SubCategory({required this.pk, required this.name});
 
-  factory LogistSubCategory.fromJson(Map<String, dynamic> json) {
-    return LogistSubCategory(pk: json['pk'], name: json['name']);
+  factory SubCategory.fromJson(Map<String, dynamic> json) {
+    return SubCategory(pk: json['pk'], name: json['name']);
   }
 }
 

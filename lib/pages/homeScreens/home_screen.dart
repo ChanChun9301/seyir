@@ -1,21 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
-import '../../widgets/circulateContainer.dart';
 import '../../component/navbar.dart';
 import '../../utils/constants.dart';
 import '../../utils/models.dart';
-import '../../widgets/text.dart';
 
 import '../controls/carousel_control.dart';
 import '../lists/main_list.dart';
-import '../logist/logistmain_list.dart';
-import '../news/news_mainlist.dart';
+import '../logist/logist_main_list.dart';
+import '../spare/spare_list.dart';
 import '../top/top_detailpage.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -153,7 +150,7 @@ class HomeScreenState extends State<HomeScreen> {
             title: Text(
               'Seýir',
               style: const TextStyle(
-                fontStyle: FontStyle.italic,
+                // fontStyle: FontStyle.italic,
                 letterSpacing: 2,
                 fontFamily: "Bricolage",
                 fontSize: 16,
@@ -394,7 +391,7 @@ class HomeScreenState extends State<HomeScreen> {
       _cat(
         'Awto şaýlary',
         'assets/category/6_main.png',
-        MainList(pageName: 'Awto şaýlary', filter: '', queryName: 'spares'),
+        SpareMainList(filter: ''),
       ),
       _cat(
         'Hyzmatlar',
@@ -404,7 +401,7 @@ class HomeScreenState extends State<HomeScreen> {
     ];
 
     return Container(
-      height: 140,
+      height: 100,
       padding: EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -418,7 +415,7 @@ class HomeScreenState extends State<HomeScreen> {
                   );
                 },
                 child: Container(
-                  width: 110,
+                  width: MediaQuery.of(context).size.width / 5,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     color: theme.colorScheme.primaryContainer,
@@ -438,9 +435,9 @@ class HomeScreenState extends State<HomeScreen> {
                         ),
                         child: Image.asset(
                           cat['image'],
-                          height: 90,
+                          height: 60,
                           width: double.infinity,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
                         ),
                       ),
                       Padding(
@@ -449,6 +446,7 @@ class HomeScreenState extends State<HomeScreen> {
                           cat['title'],
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
+                            fontFamily: 'Bricolage',
                             fontSize: 12,
                             color: theme.colorScheme.secondary,
                           ),
@@ -463,75 +461,8 @@ class HomeScreenState extends State<HomeScreen> {
               );
             }).toList(),
       ),
-      // ListView.builder(
-      //   padding: const EdgeInsets.symmetric(horizontal: 16),
-      //   scrollDirection: Axis.horizontal,
-
-      //   itemCount: categories.length,
-      //   itemBuilder:
-      //       (context, i) => Center(
-      //         child: Padding(
-      //           padding: const EdgeInsets.only(right: 20),
-      //           child: _buildCategoryCard(categories[i], theme),
-      //         ),
-      //       ),
-      // ),
     );
   }
-
-  // Widget _buildCategoryCard(Map<String, dynamic> cat, ThemeData theme) {
-  //   return InkWell(
-  //     borderRadius: BorderRadius.circular(20),
-  //     onTap:
-  //         () => Navigator.push(
-  //           context,
-  //           MaterialPageRoute(builder: (_) => cat['route']),
-  //         ),
-  //     child: Container(
-  //       width: 110,
-  //       decoration: BoxDecoration(
-  //         borderRadius: BorderRadius.circular(20),
-  //         color: theme.colorScheme.primaryContainer,
-  //         boxShadow: [
-  //           BoxShadow(
-  //             color: Colors.black12,
-  //             blurRadius: 8,
-  //             offset: const Offset(0, 4),
-  //           ),
-  //         ],
-  //       ),
-  //       child: Column(
-  //         children: [
-  //           ClipRRect(
-  //             borderRadius: const BorderRadius.vertical(
-  //               top: Radius.circular(20),
-  //             ),
-  //             child: Image.asset(
-  //               cat['image'],
-  //               height: 90,
-  //               width: double.infinity,
-  //               fit: BoxFit.cover,
-  //             ),
-  //           ),
-  //           Padding(
-  //             padding: const EdgeInsets.all(8),
-  //             child: Text(
-  //               cat['title'],
-  //               style: TextStyle(
-  //                 fontWeight: FontWeight.bold,
-  //                 fontSize: 12,
-  //                 color: theme.colorScheme.secondary,
-  //               ),
-  //               textAlign: TextAlign.center,
-  //               maxLines: 2,
-  //               overflow: TextOverflow.ellipsis,
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Map<String, dynamic> _cat(String title, String img, Widget route) => {
     'title': title,
@@ -551,7 +482,7 @@ class HomeScreenState extends State<HomeScreen> {
             ),
           ),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: theme.colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(16),
@@ -592,9 +523,11 @@ class HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     removeHtmlTags(item.title),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.secondary,
                       fontSize: 15,
+                      fontFamily: 'Bricolage',
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -604,6 +537,7 @@ class HomeScreenState extends State<HomeScreen> {
                     removeHtmlTags(item.desc),
                     style: TextStyle(
                       color: theme.colorScheme.secondary,
+                      fontFamily: 'Bricolage',
                       fontSize: 13,
                     ),
                     maxLines: 2,
@@ -615,7 +549,7 @@ class HomeScreenState extends State<HomeScreen> {
                       Icon(
                         Icons.access_time,
                         size: 14,
-                        color: theme.colorScheme.outline,
+                        color: theme.colorScheme.primary,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -623,17 +557,13 @@ class HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(
                           fontSize: 11,
                           color: theme.colorScheme.secondary,
+                          fontFamily: 'Bricolage',
                         ),
                       ),
                     ],
                   ),
                 ],
               ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: theme.colorScheme.outline,
             ),
           ],
         ),

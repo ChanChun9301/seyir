@@ -3,7 +3,7 @@ import 'package:seyir/utils/models.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-Future<LogistDetailModel> getLogistDetailApi(String id) async {
+Future<LogistDetailModel> getLogistDetailApi(int id) async {
   final response = await http.get(Uri.parse('$baseUrl/logistika/$id'));
   if (response.statusCode == 200) {
     return LogistDetailModel.fromJson(
@@ -14,54 +14,67 @@ Future<LogistDetailModel> getLogistDetailApi(String id) async {
   }
 }
 
-Future<List<AddressPage>> fetchAddress() async {
-  final response = await http.get(Uri.parse('$baseUrl/addresses/'));
+Future<List<LogistPageModel>> getData(String filter, int page) async {
+  final baseUri = Uri.parse(baseUrl);
 
-  if (response.statusCode == 200) {
-    final List<dynamic> jsonData = json.decode(response.body);
-    return jsonData.map((e) => AddressPage.fromJson(e)).toList();
-  } else {
-    throw Exception('Kategoriýalar ýükläp bolmady');
-  }
-}
-
-Future<List<LogistCategory>> fetchCategories() async {
-  final response = await http.get(Uri.parse('$baseUrl/categories/logistika/'));
-
-  if (response.statusCode == 200) {
-    final List<dynamic> jsonData = json.decode(response.body);
-    return jsonData.map((e) => LogistCategory.fromJson(e)).toList();
-  } else {
-    throw Exception('Kategoriýalar ýükläp bolmady');
-  }
-}
-
-Future<List<LogistPageModel>> getData(
-  int page,
-  String client,
-  Map<dynamic, dynamic> filter,
-) async {
+  // Собираем параметры. Если filter уже содержит '&', парсим его аккуратно.
   Map<String, String> queryParams = {
     'checked': 'True',
     'page': page.toString(),
-    'client': client,
+    'is_client': 'False',
   };
-  filter.forEach((key, value) {
-    queryParams[key] = value.toString();
-  });
 
-  // Формируем Uri с параметрами
-  final uri = Uri.parse(
-    '$baseUrl/logist-list/',
-  ).replace(queryParameters: queryParams);
+  final url = Uri(
+    scheme: baseUri.scheme,
+    host: baseUri.host,
+    port: baseUri.port,
+    path: '/logistika/',
+    queryParameters: queryParams,
+  );
 
-  final response = await http.get(uri);
+  // Добавляем ручной фильтр, если он передан как строка
+  final finalUrl = filter.isNotEmpty ? Uri.parse('$url$filter') : url;
 
-  if (response.statusCode == 200) {
-    Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
-    List results = data['results'];
-    return results.map((e) => LogistPageModel.fromJson(e)).toList();
-  } else {
+  try {
+    final response = await http.get(finalUrl);
+
+    if (response.statusCode == 200) {
+      final dynamic decodedData = jsonDecode(utf8.decode(response.bodyBytes));
+
+      // ПРОВЕРКА: Если пришел список (как в твоем примере)
+      if (decodedData is List) {
+        return decodedData.map((e) => LogistPageModel.fromJson(e)).toList();
+      }
+      // Если пришел объект с ключом 'results' (пагинация Django)
+      else if (decodedData is Map && decodedData.containsKey('results')) {
+        List results = decodedData['results'];
+        return results.map((e) => LogistPageModel.fromJson(e)).toList();
+      }
+
+      return [];
+    } else {
+      print('Server Error: ${response.statusCode}');
+      return [];
+    }
+  } catch (e) {
+    print('Error during request: $e');
     return [];
   }
 }
+
+
+
+
+  Future<List<LogistPageModel>> getAddedLogistData(String gettoken,int page) async {
+    // isLoading = true;
+    final response = await http.get(
+      Uri.parse('$baseUrl/logistika/added/?author=$gettoken&page=$page'),
+    );
+    if (response.statusCode == 200) {
+      Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+      List results = data['results'];
+      return results.map((e) => LogistPageModel.fromJson(e)).toList();
+    } else {
+      return [];
+    }
+  }

@@ -1,18 +1,12 @@
 // ignore_for_file: file_names
-import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:seyir/main.dart';
+import 'package:seyir/api/fetch_logist.dart';
 import 'package:seyir/pages/logist/detail_page_logist.dart';
-import 'package:seyir/pages/logist/logist_search_delagate.dart';
 import 'package:seyir/widgets/circulateContainer.dart';
-import '../filterWidget.dart';
-import '/component/listAppbar.dart';
 import '/utils/constants.dart';
-import '../../../component/navbar.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '/utils/models.dart';
 import '../../../widgets/text.dart';
 
@@ -39,6 +33,8 @@ class _LogistTabOneListState extends State<LogistTabOneList>
   bool isLoading = false;
   bool _isRefreshing = false;
 
+  // LogistTabOneList-iň State klasynyň içine goşmaly:
+
   @override
   void initState() {
     super.initState();
@@ -55,10 +51,19 @@ class _LogistTabOneListState extends State<LogistTabOneList>
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant LogistTabOneList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Eger öňki filter bilen täze filter deň däl bolsa, maglumatlary täzeden çek
+    if (oldWidget.filter != widget.filter) {
+      _loadData(); // Maglumatlary täzeleýän funksiýaňy çagyr
+    }
+  }
+
   Future<void> _loadData() async {
     if (!isLoading) {
       isLoading = true;
-      final newPageModels = await getData(widget.filter);
+      final newPageModels = await getData(widget.filter, page);
       setState(() {
         futureDatas.addAll(newPageModels);
       });
@@ -90,87 +95,6 @@ class _LogistTabOneListState extends State<LogistTabOneList>
       child: SingleChildScrollView(
         child: Column(
           children: [
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      showSearch(
-                        context: context,
-                        delegate: LogistSearchFilter(),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.search,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    label: Text(
-                      'Gözle',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(
-                        Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      padding: WidgetStateProperty.all(
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => const LogistFilterWidget(
-                                client: '',
-                                categories: [],
-                              ),
-                        ),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.sort,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    label: Text(
-                      'Filter',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(
-                        Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      padding: WidgetStateProperty.all(
-                        const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
             ListView.builder(
               controller: control,
               physics: const NeverScrollableScrollPhysics(),
@@ -215,7 +139,7 @@ class _LogistTabOneListState extends State<LogistTabOneList>
           horizontal: height(context) / 84.4,
           vertical: 6,
         ),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: theme.colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(16),
@@ -235,10 +159,19 @@ class _LogistTabOneListState extends State<LogistTabOneList>
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  item.img.isNotEmpty ? item.img : 'assets/no-image.jpg',
+                  item.img.isNotEmpty ? item.img : '',
                   width: 90,
                   height: 110,
                   fit: BoxFit.cover,
+                  // Eger URL boş bolsa ýa-da surat ýüklenmese işleýär
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'assets/no-image.jpg',
+                      width: 90,
+                      height: 110,
+                      fit: BoxFit.cover,
+                    );
+                  },
                 ),
               ),
             ),
@@ -414,13 +347,6 @@ class _LogistTabOneListState extends State<LogistTabOneList>
                 ],
               ),
             ),
-
-            /// ARROW
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: theme.colorScheme.outline,
-            ),
           ],
         ),
       ),
@@ -430,20 +356,5 @@ class _LogistTabOneListState extends State<LogistTabOneList>
   bool _isDateValid(String date) {
     final d = DateTime.parse(date);
     return d.isAfter(DateTime.now());
-  }
-
-  Future<List<LogistPageModel>> getData(String filter) async {
-    final response = await http.get(
-      Uri.parse(
-        '$baseUrl/logistika/?checked=True&page=$page$filter&is_client=False',
-      ),
-    );
-    if (response.statusCode == 200) {
-      Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
-      List results = data['results'];
-      return results.map((e) => LogistPageModel.fromJson(e)).toList();
-    } else {
-      return [];
-    }
   }
 }

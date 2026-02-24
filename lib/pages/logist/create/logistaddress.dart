@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:seyir/api/fetch_logist.dart';
+import 'package:seyir/api/fetches.dart';
 import 'package:seyir/component/navbar.dart';
 import 'package:seyir/pages/logist/create/create_logist.dart';
 import 'package:seyir/utils/constants.dart';

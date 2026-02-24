@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'dart:developer';
+// import 'dart:developer';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -8,7 +9,6 @@ import 'package:seyir/pages/welcome/welcome_screen.dart';
 import '/utils/constants.dart'; // baseUrl
 import '/utils/dialogs.dart';
 import '/pages/controls/token_control.dart';
-import '/pages/homeScreens/home_screen.dart';
 import '/widgets/getPhoneModel.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -118,22 +118,65 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: author,
                   keyboardType: TextInputType.phone,
                   maxLength: 8,
+                  // Фильтр, чтобы вводились только цифры
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontSize: 14, // Немного увеличил для читаемости
+                    fontFamily: 'Bricolage',
+                  ),
                   decoration: InputDecoration(
-                    hintText: '61234567',
-                    counterText: '',
-                    hintStyle: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
+                    labelText: 'Telefon belgiňiz', // Понятный ярлык
+                    hintText: '61234567', // Пример в подсказке
+                    counterText: '', // Скрываем счетчик 0/8
+                    // Префикс +993
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 12,
+                      ),
+                      child: Text(
+                        '+993 ',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Bricolage',
+                        ),
+                      ),
                     ),
+
                     filled: true,
-                    fillColor: const Color(0xfff0f0f0),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    fillColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer.withOpacity(0.5),
+
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                      borderSide:
+                          BorderSide
+                              .none, // Оставляем плоским, как в твоем коде
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.grey.withOpacity(0.2),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 2,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
                   height: 50,

@@ -14,7 +14,7 @@ class LogistCategoryPage extends StatefulWidget {
 }
 
 class _LogistCategoryPageState extends State<LogistCategoryPage> {
-  late Future<List<LogistCategory>> _categoriesFuture;
+  late Future<List<CategoryPage>> _categoriesFuture;
   late List<SaylananCategory> selectedCategories;
 
   Future<void> saveSelectedCategories(List<SaylananCategory> list) async {
@@ -40,7 +40,7 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => LogistFilterWidget(categories: [], client: ''),
+        builder: (context) => LogistFilterWidget(categories: []),
       ),
     );
   }
@@ -85,7 +85,7 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
       ),
       extendBodyBehindAppBar: true,
       drawer: const NavBar(),
-      body: FutureBuilder<List<LogistCategory>>(
+      body: FutureBuilder<List<CategoryPage>>(
         future: _categoriesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -106,7 +106,7 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
               final category = mainCategories[index];
               return ExpansionTile(
                 title: Text(
-                  category.name,
+                  category.title,
                   style: TextStyle(
                     fontFamily: 'Bricolage',
                     fontSize: 12,
@@ -186,12 +186,12 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
   }
 }
 
-Future<List<LogistCategory>> fetchCategories() async {
+Future<List<CategoryPage>> fetchCategories() async {
   final response = await http.get(Uri.parse('$baseUrl/logistcategory-list/'));
 
   if (response.statusCode == 200) {
     final List<dynamic> jsonData = json.decode(response.body);
-    return jsonData.map((e) => LogistCategory.fromJson(e)).toList();
+    return jsonData.map((e) => CategoryPage.fromJson(e)).toList();
   } else {
     throw Exception('Kategoriýalar ýükläp bolmady');
   }

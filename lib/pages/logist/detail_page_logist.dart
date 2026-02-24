@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:intl/intl.dart';
 import 'package:seyir/api/fetch_logist.dart';
 import 'package:seyir/main.dart';
@@ -28,7 +30,35 @@ class _LogistDetailPageState extends State<LogistDetailPage> {
   @override
   void initState() {
     super.initState();
-    futureCar = getLogistDetailApi(widget.id);
+    futureCar = getLogistDetailApi(int.parse(widget.id));
+  }
+
+  Future<void> _makeCall(String phoneNumber) async {
+    // 1. Nomeri arassalamak (boşluklary we gereksiz simwollary aýyrmak)
+    String cleanNumber = phoneNumber.replaceAll(RegExp(r'\s+'), '');
+
+    // 2. Formatirlemek logikasy
+    if (!cleanNumber.startsWith('+')) {
+      if (cleanNumber.startsWith('993')) {
+        // Eger 993 bilen başlaýan bolsa, diňe + goşmaly
+        cleanNumber = '+$cleanNumber';
+      } else {
+        // Galan ýagdaýlarda (meselem 65...) öňüne +993 goşmaly
+        cleanNumber = '+993$cleanNumber';
+      }
+    }
+
+    final Uri uri = Uri(scheme: 'tel', path: cleanNumber);
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        log("Jaň edip bolmady: $cleanNumber");
+      }
+    } catch (e) {
+      log("Ýalňyşlyk: $e");
+    }
   }
 
   @override
@@ -36,36 +66,41 @@ class _LogistDetailPageState extends State<LogistDetailPage> {
     final formatter = DateFormat('yyyy-MM-dd');
     final today = formatter.format(DateTime.now());
 
-    return Scaffold(
-      drawer: const NavBar(),
-      backgroundColor: Theme.of(context).colorScheme.background,
-      appBar: AppBar(
-        centerTitle: true,
-        elevation: 6,
-        title: Text(
-          widget.title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontFamily: "Bricolage",
-            color: Colors.white,
+    return FutureBuilder<LogistDetailModel>(
+      future: futureCar,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const CircularContainerMain();
+        }
+
+        final data = snapshot.data!;
+        images = data.images.map((e) => e.url).toList();
+
+        return Scaffold(
+          drawer: const NavBar(),
+          backgroundColor: Theme.of(context).colorScheme.background,
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(40),
+            child: AppBar(
+              centerTitle: true,
+              elevation: 6,
+              title: Text(
+                widget.title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontFamily: "Bricolage",
+                  color: Colors.white,
+                ),
+              ),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(24),
+                ),
+              ),
+            ),
           ),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
-        ),
-      ),
-      body: FutureBuilder<LogistDetailModel>(
-        future: futureCar,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const CircularContainerMain();
-          }
-
-          final data = snapshot.data!;
-          images = data.images.map((e) => e.url).toList();
-
-          return SingleChildScrollView(
+          body: SingleChildScrollView(
             padding: const EdgeInsets.all(12),
             child: Column(
               children: [
@@ -146,6 +181,21 @@ class _LogistDetailPageState extends State<LogistDetailPage> {
                     ],
                   ),
                 ),
+                _card(
+                  context,
+                  Column(
+                    children: [
+                      _infoRow(
+                        Icons.location_city_outlined,
+                        'Nirede: ${data.nirden}',
+                      ),
+                      _infoRow(
+                        Icons.location_city_outlined,
+                        'Nirä: ${data.where}',
+                      ),
+                    ],
+                  ),
+                ),
 
                 /// Description
                 _card(
@@ -182,48 +232,36 @@ class _LogistDetailPageState extends State<LogistDetailPage> {
                 const SizedBox(height: 80),
               ],
             ),
-          );
-        },
-      ),
-
-      /// Call Button
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(12),
-        child: SizedBox(
-          height: 50,
-          child: ElevatedButton.icon(
-            onPressed: () async {
-              final uri = Uri(
-                scheme: 'tel',
-                path: '+993${snapshotPhone(context)}',
-              );
-              if (await canLaunchUrl(uri)) {
-                launchUrl(uri);
-              }
-            },
-            icon: Icon(
-              CupertinoIcons.phone,
-              size: 16,
-              color: Theme.of(context).colorScheme.onSecondary,
-            ),
-            label: Text(
-              'Habarlaşmak',
-              style: TextStyle(
-                fontSize: 13,
-                letterSpacing: 1,
-                fontFamily: "Bricolage",
-                color: Colors.white,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+          ),
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.all(12),
+            child: SizedBox(
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: () => _makeCall(data.phone),
+                icon: Icon(CupertinoIcons.phone, size: 16, color: Colors.white),
+                label: Text(
+                  'Habarlaşmak',
+                  style: TextStyle(
+                    fontSize: 13,
+                    letterSpacing: 1,
+                    fontFamily: "Bricolage",
+                    color: Colors.white,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
+
+      /// Call Button
     );
   }
 
@@ -264,7 +302,7 @@ class _LogistDetailPageState extends State<LogistDetailPage> {
             child: Text(
               text,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 fontFamily: "Bricolage",
                 fontWeight: FontWeight.w500,
                 color: Theme.of(context).colorScheme.onSecondary,
@@ -277,8 +315,10 @@ class _LogistDetailPageState extends State<LogistDetailPage> {
   }
 
   /// phone safe getter
+  bool snapshotHasPhone(BuildContext context) => true;
+
   String snapshotPhone(BuildContext context) {
-    final state = (context.findAncestorStateOfType<_LogistDetailPageState>());
-    return state?.futureCar != null ? '' : '';
+    // тут телефон уже есть в data, логика оставлена простой
+    return '';
   }
 }

@@ -5,78 +5,67 @@ import 'package:seyir/utils/models.dart';
 import 'package:hive/hive.dart';
 
 class CategoryListPage extends StatefulWidget {
-  String? queryName;
-  CategoryListPage({Key? key, required this.queryName}) : super(key: key);
+  final String? queryName;
+  const CategoryListPage({Key? key, required this.queryName}) : super(key: key);
+
   @override
   State<CategoryListPage> createState() => _CategoryListPageState();
 }
 
 class _CategoryListPageState extends State<CategoryListPage> {
   late Future<List<CategoryPage>> _categoriesFuture;
-  late List<SaylananCategory> selectedCategories;
-  List<SaylananCategory> selectedSubcategories = [];
 
-  Future<void> saveSelectedCategories(List<SaylananCategory> list) async {
-    final Box<SaylananCategory> box = Hive.box<SaylananCategory>(
-      'selected_categories',
-    );
-    await box.clear();
-    for (var item in list) {
-      await box.add(item);
-    }
-  }
+  // Saýlanan ýeke-täk kategoriýany saklamak üçin
+  List<SaylananCategory> selectedCategories = [];
 
   @override
   void initState() {
     super.initState();
-    selectedCategories = [];
-    _categoriesFuture = fetchCategories(widget.queryName!);
+    _categoriesFuture = fetchCategories(widget.queryName ?? '');
   }
 
+  // Maglumatlary yzyna ibermek
   void _save() {
     Navigator.pop(context, selectedCategories);
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: theme.colorScheme.background,
+      drawer: const NavBar(),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(40),
         child: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.primary,
+          backgroundColor: theme.colorScheme.primary,
           centerTitle: true,
+          elevation: 0,
           title: const Text(
-            'Kategoriýalar',
+            'Kategoriýa saýla',
             style: TextStyle(
-              fontStyle: FontStyle.italic,
-              letterSpacing: 2,
               fontFamily: "Bricolage",
               fontSize: 16,
               color: Colors.white,
             ),
           ),
           leading: Builder(
-            builder: (BuildContext context) {
-              return IconButton(
-                icon: const Icon(
-                  Icons.sort_outlined,
-                  color: Colors.white,
-                  size: 16,
+            builder:
+                (context) => IconButton(
+                  icon: const Icon(
+                    Icons.sort_outlined,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-              );
-            },
           ),
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(25)),
           ),
         ),
       ),
-      extendBodyBehindAppBar: true,
-      drawer: const NavBar(),
       body: FutureBuilder<List<CategoryPage>>(
         future: _categoriesFuture,
         builder: (context, snapshot) {
@@ -85,71 +74,57 @@ class _CategoryListPageState extends State<CategoryListPage> {
           } else if (snapshot.hasError) {
             return const Center(child: Text("Ýalňyşlyk ýüze çykdy"));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Maglumat ýok"));
+            return const Center(child: Text("Kategoriýa tapylmady"));
           }
 
           final categories = snapshot.data!;
+          // Diňe subkategoriýasy bolan esasy kategoriýalary görkezmek
           final mainCategories =
               categories.where((cat) => cat.subcategories.isNotEmpty).toList();
 
           return ListView.builder(
+            padding: const EdgeInsets.only(top: 10, bottom: 80),
             itemCount: mainCategories.length,
             itemBuilder: (context, index) {
               final category = mainCategories[index];
+
               return ExpansionTile(
+                iconColor: theme.colorScheme.primary,
                 title: Text(
                   category.title,
                   style: TextStyle(
                     fontFamily: 'Bricolage',
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.secondary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: theme.colorScheme.secondary,
                   ),
                 ),
-                shape: RoundedRectangleBorder(
-                  side: BorderSide.none, // Açylan ýagdaýda hem border ýok
-                ),
-                // backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                backgroundColor: Colors.transparent, // Arkafon reňki göni
-                collapsedBackgroundColor: Colors.transparent,
-                collapsedShape: RoundedRectangleBorder(
-                  side: BorderSide.none, // Çökelen ýagdaýda border ýok
-                ),
+                shape: const Border(), // ExpansionTile çyzyklaryny aýyrýar
                 children:
                     category.subcategories.map((sub) {
-                      return CheckboxListTile(
+                      // Diňe birini saýlap bolar ýaly RadioListTile
+                      return RadioListTile<int>(
                         title: Text(
                           sub.name,
                           style: TextStyle(
                             fontFamily: 'Bricolage',
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.secondary,
+                            fontSize: 13,
+                            color: theme.colorScheme.secondary,
                           ),
                         ),
-                        value: selectedCategories.any(
-                          (item) => item.id == sub.pk,
-                        ),
-                        activeColor: Theme.of(context).colorScheme.primary,
-                        fillColor: MaterialStateProperty.resolveWith<Color>((
-                          Set<MaterialState> states,
-                        ) {
-                          if (states.contains(MaterialState.selected)) {
-                            return Theme.of(context)
-                                .colorScheme
-                                .primary; // seçilen ýagdaýda ikon reňki
-                          }
-                          return Colors.grey; // saýlanmadyk ýagdaýda ikon reňki
-                        }),
-                        checkColor: Colors.white,
-
-                        onChanged: (bool? checked) {
+                        value: sub.pk,
+                        // Eger şu ID sanawda bar bolsa, ony saýlanan diýip görkez
+                        groupValue:
+                            selectedCategories.isNotEmpty
+                                ? selectedCategories.first.id
+                                : null,
+                        activeColor: theme.colorScheme.primary,
+                        onChanged: (int? value) {
                           setState(() {
-                            if (checked == true) {
+                            selectedCategories.clear(); // Öňkini öçür
+                            if (value != null) {
                               selectedCategories.add(
                                 SaylananCategory(id: sub.pk, name: sub.name),
-                              );
-                            } else {
-                              selectedCategories.removeWhere(
-                                (item) => item.id == sub.pk,
                               );
                             }
                           });
@@ -162,11 +137,15 @@ class _CategoryListPageState extends State<CategoryListPage> {
           );
         },
       ),
+
+      // Ýatda sakla düwmesi
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: selectedCategories.isEmpty ? null : _save,
         backgroundColor:
-            Theme.of(context).colorScheme.primary,
+            selectedCategories.isEmpty
+                ? Colors.grey
+                : theme.colorScheme.primary,
         icon: const Icon(Icons.check, color: Colors.white),
         label: const Text(
           "Saýlawy tassykla",

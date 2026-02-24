@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:seyir/utils/constants.dart';
 import '/widgets/text.dart';
 import '/widgets/circulateContainer.dart';
-import 'detail_page.dart';
+import 'detail/detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '/utils/models.dart';
@@ -66,7 +66,6 @@ class SearchFilter extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
-    double h = MediaQuery.of(context).size.height;
     return FutureBuilder(
       future: getSearchData(query),
       builder: (context, AsyncSnapshot<List<PageModel>> snapshot) {
@@ -76,107 +75,7 @@ class SearchFilter extends SearchDelegate {
             shrinkWrap: true,
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) => DetailPage(
-                            id: snapshot.data![index].id,
-                            query: urlName,
-                            title: snapshot.data![index].title,
-                          ),
-                    ),
-                  );
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(height(context) / 84.4),
-                    ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(99, 99, 99, 0.2),
-                        blurRadius: 8,
-                        spreadRadius: 0,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                  ),
-                  width: double.infinity,
-                  height: 90,
-                  margin: EdgeInsets.only(
-                    left: height(context) / 84.4,
-                    right: height(context) / 84.4,
-                    // bottom: 10,
-                    top: 10,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 150,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(h / 84.4),
-                            bottomLeft: Radius.circular(h / 84.4),
-                          ),
-                          color: Colors.white38,
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(h / 84.4),
-                            bottomLeft: Radius.circular(h / 84.4),
-                          ),
-                          child: Image.network(
-                            snapshot.data![index].img,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: SizedBox(
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              left: h / 84.4,
-                              right: h / 84.4,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                BigText(text: snapshot.data![index].title),
-                                const SizedBox(height: 5),
-                                SmallText(text: snapshot.data![index].desc),
-                                SizedBox(height: h / 84.34),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    SmallText(
-                                      text: snapshot.data![index].categoryName
-                                          .toString()
-                                          .substring(0, 10),
-                                    ),
-                                    SmallText(
-                                      text: snapshot.data![index].created
-                                          .toString()
-                                          .substring(0, 10),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
+              return _buildModernListItem(snapshot.data![index], context);
             },
           );
         } else {
@@ -198,111 +97,144 @@ class SearchFilter extends SearchDelegate {
             shrinkWrap: true,
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) => DetailPage(
-                            id: snapshot.data![index].id,
-                            query: urlName,
-                            title: snapshot.data![index].title,
-                          ),
-                    ),
-                  );
-                },
-                child: Container(
-                  margin: EdgeInsets.only(
-                    left: height(context) / 84.4,
-                    right: height(context) / 84.4,
-                    // bottom: 10,
-                    top: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(height(context) / 84.4),
-                    ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(99, 99, 99, 0.2),
-                        blurRadius: 8,
-                        spreadRadius: 0,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                  ),
-                  width: double.infinity,
-                  height: 90,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 150,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(h / 84.4),
-                            bottomLeft: Radius.circular(h / 84.4),
-                          ),
-                          color: Colors.white38,
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(h / 84.4),
-                            bottomLeft: Radius.circular(h / 84.4),
-                          ),
-                          child: Image.network(
-                            snapshot.data![index].img,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: SizedBox(
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              left: 5,
-                              right: height(context) / 84.4,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                BigText(text: snapshot.data![index].title),
-                                SmallText(text: snapshot.data![index].desc),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    SmallText(
-                                      text:
-                                          snapshot.data![index].categoryName
-                                              .toString(),
-                                    ),
-                                    SmallText(
-                                      text:
-                                          snapshot.data![index].created
-                                              .toString(),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
+              return _buildModernListItem(snapshot.data![index], context);
             },
           );
         } else {
           return const CircularContainerMain();
         }
       },
+    );
+  }
+
+  Widget _buildModernListItem(PageModel item, BuildContext context) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) =>
+                    DetailPage(id: item.id, query: urlName, title: item.title),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Hero(
+              tag: 'item-${item.id}',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Image.network(
+                  item.img.isNotEmpty ? item.img : '',
+                  width: 90,
+                  height: 110,
+                  fit: BoxFit.cover,
+                  // Eger URL boş bolsa ýa-da surat ýüklenmese işleýär
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'assets/no-image.jpg',
+                      width: 90,
+                      height: 110,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            /// TEXT
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// TITLE
+                  Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: theme.colorScheme.secondary,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  /// DESCRIPTION
+                  Text(
+                    item.desc,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: theme.colorScheme.onSecondary,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  /// ADDRESS + CATEGORY + DATE
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SmallText(text: item.addressName ?? '-'),
+
+                      SizedBox(
+                        width: 60,
+                        child: SmallText(text: item.categoryName ?? ""),
+                      ),
+
+                      Row(
+                        children: [
+                          const Icon(Icons.access_time, size: 13),
+                          const SizedBox(width: 4),
+                          SmallText(
+                            text:
+                                (item.created.toString().substring(0, 10) ==
+                                        formattedDate)
+                                    ? "Şu gün"
+                                    : item.created.toString().substring(0, 10),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 8),
+
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: theme.colorScheme.outline,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

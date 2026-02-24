@@ -3,7 +3,7 @@ import 'package:seyir/utils/models.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-Future<List<PageModel>> getData(int page, Map<dynamic, dynamic> filter) async {
+Future<List<ServicePageModel>> getData(int page, Map<dynamic, dynamic> filter) async {
   // Базовые параметры
   Map<String, String> queryParams = {
     'checked': 'True',
@@ -16,14 +16,16 @@ Future<List<PageModel>> getData(int page, Map<dynamic, dynamic> filter) async {
   });
 
   // Формируем Uri с параметрами
-  final uri = Uri.parse('$baseUrl/car/').replace(queryParameters: queryParams);
+  final uri = Uri.parse(
+    '$baseUrl/hyzmatlar/',
+  ).replace(queryParameters: queryParams);
 
   final response = await http.get(uri);
   try {
     if (response.statusCode == 200) {
       Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
       List results = data['results'];
-      return results.map((e) => PageModel.fromJson(e)).toList();
+      return results.map((e) => ServicePageModel.fromJson(e)).toList();
     } else {
       return [];
     }
@@ -32,23 +34,23 @@ Future<List<PageModel>> getData(int page, Map<dynamic, dynamic> filter) async {
   }
 }
 
-Future<List<PageModel>> getSearchData(String text) async {
+Future<List<ServicePageModel>> getSearchData(String text) async {
   final response = await http.get(
-    Uri.parse('$baseUrl/carmain-list/?search=$text&checked=true'),
+    Uri.parse('$baseUrl/hyzmatlar/?search=$text&checked=true'),
   );
   Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
   List results = data['results'];
   if (response.statusCode == 200) {
-    return results.map((e) => PageModel.fromJson(e)).toList();
+    return results.map((e) => ServicePageModel.fromJson(e)).toList();
   } else {
     return [];
   }
 }
 
-Future<CarDetailModel> getCarDetailApi(int id) async {
-  final response = await http.get(Uri.parse('$baseUrl/car/$id'));
+Future<DetailModel> getServiceDetailApi(int id) async {
+  final response = await http.get(Uri.parse('$baseUrl/hyzmatlar/$id'));
   if (response.statusCode == 200) {
-    return CarDetailModel.fromJson(
+    return DetailModel.fromJson(
       jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>,
     );
   } else {
@@ -67,14 +69,14 @@ Future<List<CategoryPage>> fetchCategories(String queryName) async {
   }
 }
 
-Future<List<PageModel>> getAddedData(String token, int page) async {
+Future<List<ServicePageModel>> getAddedData(String token, int page) async {
   final response = await http.get(
-    Uri.parse('$baseUrl/car/added/?author=$token&page=$page'),
+    Uri.parse('$baseUrl/hyzmatlar/added/?author=$token&page=$page'),
   );
   if (response.statusCode == 200) {
     Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
     List results = data['results'];
-    return results.map((e) => PageModel.fromJson(e)).toList();
+    return results.map((e) => ServicePageModel.fromJson(e)).toList();
   } else {
     return [];
   }

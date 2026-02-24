@@ -1,13 +1,12 @@
 // ignore_for_file: file_names
 
-import 'dart:developer';
-
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../component/navbar.dart';
+import '../detail/_card_carousel.dart';
 import '/utils/constants.dart';
 import '/utils/getData.dart';
 import '/utils/models.dart';
@@ -29,11 +28,13 @@ class _TopDetailPageState extends State<TopDetailPage> {
   late Future<DetailModel> futureCar;
   final CarouselSliderController csc = CarouselSliderController();
   List<String> images = [];
+  bool _isImagesInitialized = false;
   int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
+
     futureCar = getTopDetailDataApi(widget.id);
   }
 
@@ -67,9 +68,17 @@ class _TopDetailPageState extends State<TopDetailPage> {
           }
 
           final data = snapshot.data!;
-          images
-            ..clear()
-            ..addAll(data.images);
+          if (!_isImagesInitialized) {
+            images.clear();
+            // Esasy suraty goşýarys
+            if (data.img.isNotEmpty) images.add(data.img);
+
+            // Goşmaça suratlaryň URL-lerini ImageModel-den alýarys
+            // Üns beriň: v['url'] däl-de, v.url bolmaly!
+            images.addAll(data.images.map((v) => v.url).toList());
+
+            _isImagesInitialized = true;
+          }
 
           return SafeArea(
             child: SingleChildScrollView(
@@ -77,30 +86,24 @@ class _TopDetailPageState extends State<TopDetailPage> {
               child: Column(
                 children: [
                   /// ================= IMAGES =================
-                  _card(
-                    context,
-                    Column(
-                      children: [
-                        CarouselSlider(
-                          carouselController: csc,
+                  Column(
+                    children: [
+                      CarouselItemcard(
+                        context: context,
+                        child: CarouselSlider(
                           items:
                               images.isNotEmpty
-                                  ? images
-                                      .asMap()
-                                      .entries
-                                      .map(
-                                        (e) => ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                          child: Images(
-                                            images: images,
-                                            id: e.key,
-                                          ),
-                                        ),
-                                      )
-                                      .toList()
+                                  ? images.map((img) {
+                                    return ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Images(
+                                        images: images,
+                                        id: images.indexOf(img),
+                                      ),
+                                    );
+                                  }).toList()
                                   : [
+                                    // Eger suratlar sanawy boş bolsa, asset-den suraty görkezýäris
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(16),
                                       child: Image.asset(
@@ -111,46 +114,45 @@ class _TopDetailPageState extends State<TopDetailPage> {
                                     ),
                                   ],
                           options: CarouselOptions(
-                            autoPlay: true,
+                            autoPlay:
+                                images.length >
+                                1, // Diňe 1-den köp surat bolsa auto-play işlesin
                             viewportFraction: 1,
                             aspectRatio: 2,
-                            onPageChanged: (index, _) {
-                              setState(() => _currentIndex = index);
-                            },
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 6),
 
-                        const SizedBox(height: 6),
-
-                        /// INDICATORS
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children:
-                              images.asMap().entries.map((entry) {
-                                return GestureDetector(
-                                  onTap: () => csc.animateToPage(entry.key),
-                                  child: Container(
-                                    width: _currentIndex == entry.key ? 16 : 6,
-                                    height: 6,
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 3,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      color:
-                                          _currentIndex == entry.key
-                                              ? Theme.of(
-                                                context,
-                                              ).colorScheme.primary
-                                              : Colors.grey.shade400,
-                                    ),
+                      /// INDICATORS
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children:
+                            images.asMap().entries.map((entry) {
+                              return GestureDetector(
+                                onTap: () => csc.animateToPage(entry.key),
+                                child: Container(
+                                  width: _currentIndex == entry.key ? 16 : 6,
+                                  height: 6,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 3,
                                   ),
-                                );
-                              }).toList(),
-                        ),
-                      ],
-                    ),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    color:
+                                        _currentIndex == entry.key
+                                            ? Theme.of(
+                                              context,
+                                            ).colorScheme.primary
+                                            : Colors.grey.shade400,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 6),
 
                   /// ================= TITLE =================
                   _card(

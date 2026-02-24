@@ -1,8 +1,8 @@
-import 'dart:convert';
 // import 'dart:developer';
 import './create/update.dart';
 import 'package:seyir/pages/logist/detail_page_logist.dart';
 import 'package:seyir/widgets/listDescText.dart';
+import 'package:seyir/api/fetch_logist.dart';
 import '/main.dart';
 import '/utils/constants.dart';
 import 'create/create_logist.dart';
@@ -10,7 +10,6 @@ import '../../utils/dialogs.dart';
 import '../../widgets/circulate_Container.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '/utils/models.dart';
 import '../../widgets/text.dart';
 
@@ -45,7 +44,7 @@ class _AddedLogistState extends State<AddedLogist>
   Future<void> _loadData() async {
     if (!isLoading) {
       isLoading = true;
-      final newPageModels = await getAddedLogistData(widget.token);
+      final newPageModels = await getAddedLogistData(widget.token, page);
       setState(() {
         futureDatas.addAll(newPageModels);
       });
@@ -135,338 +134,311 @@ class _AddedLogistState extends State<AddedLogist>
                   );
 
                   if (index < futureDatas.length) {
-                    return Container(
-                      height: 110,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(height(context) / 84.4),
-                        ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color.fromRGBO(99, 99, 99, 0.2),
-                            blurRadius: 8,
-                            spreadRadius: 0,
-                            offset: Offset(0, 2),
+                    return InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => LogistDetailPage(
+                                  id: futureDatas[index].id,
+                                  title: futureDatas[index].title,
+                                ),
                           ),
-                        ],
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                      width: double.infinity,
-                      margin: EdgeInsets.only(
-                        left: height(context) / 84.4,
-                        right: height(context) / 84.4,
-                        bottom: height(context) / 84.4,
-                        // top: 10,
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => LogistDetailPage(
-                                    id: futureDatas[index].id,
-                                    title: futureDatas[index].title,
-                                  ),
+                        );
+                      },
+
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color.fromRGBO(99, 99, 99, 0.18),
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
                             ),
-                          );
-                        },
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        margin: EdgeInsets.symmetric(
+                          horizontal: height(context) / 84.4,
+                          vertical: 6,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Container(
-                              width: 110,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(
-                                    height(context) / 84.4,
-                                  ),
-                                  bottomLeft: Radius.circular(
-                                    height(context) / 84.4,
-                                  ),
-                                ),
-                                color: Colors.white38,
-                              ),
+                            Hero(
+                              tag: 'logist-two-${futureDatas[index].id}',
                               child: ClipRRect(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(
-                                    height(context) / 84.4,
-                                  ),
-                                  bottomLeft: Radius.circular(
-                                    height(context) / 84.4,
-                                  ),
-                                ),
+                                borderRadius: BorderRadius.circular(12),
                                 child: Image.network(
-                                  futureDatas[index].img,
+                                  futureDatas[index].img.isNotEmpty
+                                      ? futureDatas[index].img
+                                      : '',
+                                  width: 90,
+                                  height: 110,
                                   fit: BoxFit.cover,
-                                  errorBuilder:
-                                      (context, error, stackTrace) =>
-                                          const Icon(
-                                            Icons.image_not_supported,
-                                            size: 50,
-                                          ),
+                                  // Eger URL boş bolsa ýa-da surat ýüklenmese işleýär
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Image.asset(
+                                      'assets/no-image.jpg',
+                                      width: 90,
+                                      height: 110,
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
                                 ),
                               ),
                             ),
+                            const SizedBox(width: 12),
                             Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 5,
-                                  right: 5,
-                                  top: 5,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    SizedBox(
-                                      height: 33,
-                                      width: double.infinity,
-                                      child: Stack(
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              SizedBox(
-                                                width: 150,
-                                                child: BigText(
-                                                  text:
-                                                      futureDatas[index].title,
-                                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  SizedBox(
+                                    // height: 33,
+                                    width: double.infinity,
+                                    child: Stack(
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: width(context) / 2,
+                                              child: BigText(
+                                                text: futureDatas[index].title,
                                               ),
-                                              SmallText(
-                                                text:
-                                                    (futureDatas[index].created
-                                                                .toString()
-                                                                .substring(
-                                                                  0,
-                                                                  10,
-                                                                ) ==
-                                                            formattedDate)
-                                                        ? 'Şu gün'
-                                                        : futureDatas[index]
-                                                            .created
-                                                            .toString()
-                                                            .substring(0, 10),
-                                              ),
-                                            ],
-                                          ),
-                                          Positioned(
-                                            right: 0,
-                                            top: 0,
-                                            child: Container(
-                                              height: 30,
-                                              width: 30,
-                                              decoration: BoxDecoration(
-                                                color: Colors.grey.shade300,
-                                                borderRadius:
-                                                    BorderRadius.circular(50),
-                                              ),
-                                              child: IconButton(
-                                                onPressed: () {
-                                                  setState(() {
-                                                    showDeleteDialog(
-                                                      context,
-                                                      'logist',
-                                                      futureDatas[index].id,
-                                                    );
-                                                  });
-                                                },
-                                                icon: Icon(
-                                                  CupertinoIcons.delete,
-                                                  size: 14,
-                                                  color:
-                                                      SeyirApp
-                                                                  .themeNotifier
-                                                                  .value ==
-                                                              ThemeMode.light
-                                                          ? Colors.red[600]
-                                                          : Colors.white,
-                                                ),
+                                            ),
+                                            SmallText(
+                                              text:
+                                                  (futureDatas[index].created
+                                                              .toString()
+                                                              .substring(
+                                                                0,
+                                                                10,
+                                                              ) ==
+                                                          formattedDate)
+                                                      ? 'Şu gün'
+                                                      : futureDatas[index]
+                                                          .created
+                                                          .toString()
+                                                          .substring(0, 10),
+                                            ),
+                                          ],
+                                        ),
+                                        Positioned(
+                                          right: 0,
+                                          top: 0,
+                                          child: Container(
+                                            height: 30,
+                                            width: 30,
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.shade300,
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                            ),
+                                            child: IconButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  showDeleteDialog(
+                                                    context,
+                                                    'logist',
+                                                    futureDatas[index].id,
+                                                  );
+                                                });
+                                              },
+                                              icon: Icon(
+                                                CupertinoIcons.delete,
+                                                size: 14,
+                                                color:
+                                                    SeyirApp
+                                                                .themeNotifier
+                                                                .value ==
+                                                            ThemeMode.light
+                                                        ? Colors.red[600]
+                                                        : Colors.white,
                                               ),
                                             ),
                                           ),
-                                          Positioned(
-                                            right: 35,
-                                            top: 0,
-                                            child: Container(
-                                              height: 30,
-                                              width: 30,
-                                              decoration: BoxDecoration(
-                                                color: Colors.grey.shade300,
-                                                borderRadius:
-                                                    BorderRadius.circular(50),
+                                        ),
+                                        Positioned(
+                                          right: 35,
+                                          top: 0,
+                                          child: Container(
+                                            height: 30,
+                                            width: 30,
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.shade300,
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                            ),
+                                            child: IconButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder:
+                                                          (context) =>
+                                                              UpdateLogist(id: int.parse(futureDatas[index].id),isEditing: true,),
+                                                    ),
+                                                  );
+                                                });
+                                              },
+                                              icon: Icon(
+                                                CupertinoIcons.pencil,
+                                                size: 14,
+                                                color:
+                                                    SeyirApp
+                                                                .themeNotifier
+                                                                .value ==
+                                                            ThemeMode.light
+                                                        ? Colors.green[600]
+                                                        : Colors.white,
                                               ),
-                                              child: IconButton(
-                                                onPressed: () {
-                                                  setState(() {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder:
-                                                            (context) =>
-                                                                CreateUpdateLog(),
-                                                      ),
-                                                    );
-                                                  });
-                                                },
-                                                icon: Icon(
-                                                  CupertinoIcons.pencil,
-                                                  size: 14,
-                                                  color:
-                                                      SeyirApp
-                                                                  .themeNotifier
-                                                                  .value ==
-                                                              ThemeMode.light
-                                                          ? Colors.green[600]
-                                                          : Colors.white,
-                                                ),
-                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Ahyrky sene:',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.secondary,
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Bricolage',
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            (futureDatas[index].created
+                                                        .toString()
+                                                        .substring(0, 10) !=
+                                                    formattedDate.toString())
+                                                ? futureDatas[index].lastDate
+                                                    .toString()
+                                                : futureDatas[index].lastDate
+                                                    .toString(),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color:
+                                                  (lastmonth >= month &&
+                                                          lastday >= day &&
+                                                          lastyear >= year)
+                                                      ? Theme.of(
+                                                        context,
+                                                      ).colorScheme.secondary
+                                                      : Colors.red,
+                                              fontWeight: FontWeight.w400,
+                                              fontFamily: 'Bricolage',
+                                              fontSize: 10,
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              'Ahyrky sene:',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color:
-                                                    Theme.of(
-                                                      context,
-                                                    ).colorScheme.secondary,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Bricolage',
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Text(
-                                              (futureDatas[index].created
-                                                          .toString()
-                                                          .substring(0, 10) !=
-                                                      formattedDate.toString())
-                                                  ? futureDatas[index].lastDate
-                                                      .toString()
-                                                  : futureDatas[index].lastDate
-                                                      .toString(),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color:
-                                                    (lastmonth >= month &&
-                                                            lastday >= day &&
-                                                            lastyear >= year)
-                                                        ? Theme.of(
-                                                          context,
-                                                        ).colorScheme.secondary
-                                                        : Colors.red,
-                                                fontWeight: FontWeight.w400,
-                                                fontFamily: 'Bricolage',
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              (futureDatas[index].isBring ==
-                                                      true)
-                                                  ? 'Getirmeli'
-                                                  : 'Alyp gitmeli',
-                                              style: TextStyle(
-                                                color:
-                                                    (futureDatas[index]
-                                                                .isBring ==
-                                                            true)
-                                                        ? (SeyirApp
-                                                                    .themeNotifier
-                                                                    .value ==
-                                                                ThemeMode.light
-                                                            ? Colors
-                                                                .green
-                                                                .shade500
-                                                            : Colors
-                                                                .grey
-                                                                .shade200)
-                                                        : Colors.blue,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Bricolage',
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Icon(
-                                              (futureDatas[index].isBring ==
-                                                      true)
-                                                  ? CupertinoIcons
-                                                      .arrow_down_square_fill
-                                                  : CupertinoIcons
-                                                      .arrow_up_square_fill,
-                                              size: 18,
+                                      Row(
+                                        children: [
+                                          Text(
+                                            (futureDatas[index].isBring == true)
+                                                ? 'Getirmeli'
+                                                : 'Alyp gitmeli',
+                                            style: TextStyle(
                                               color:
                                                   (futureDatas[index].isBring ==
                                                           true)
-                                                      ? Colors.green
+                                                      ? (SeyirApp
+                                                                  .themeNotifier
+                                                                  .value ==
+                                                              ThemeMode.light
+                                                          ? Colors
+                                                              .green
+                                                              .shade500
+                                                          : Colors
+                                                              .grey
+                                                              .shade200)
                                                       : Colors.blue,
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Bricolage',
+                                              fontSize: 12,
                                             ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        SizedBox(
-                                          width: 200,
-                                          child: DescTextWidget(
-                                            desc: futureDatas[index].desc,
                                           ),
-                                        ),
-                                        Text(
-                                          (futureDatas[index].isClient == true)
-                                              ? 'Müşderi'
-                                              : 'Ulag',
-                                          style: TextStyle(
-                                            color: Colors.green.shade500,
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: 'Bricolage',
-                                            fontSize: 12,
+                                          const SizedBox(width: 5),
+                                          Icon(
+                                            (futureDatas[index].isBring == true)
+                                                ? CupertinoIcons
+                                                    .arrow_down_square_fill
+                                                : CupertinoIcons
+                                                    .arrow_up_square_fill,
+                                            size: 18,
+                                            color:
+                                                (futureDatas[index].isBring ==
+                                                        true)
+                                                    ? Colors.green
+                                                    : Colors.blue,
                                           ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      SizedBox(
+                                        width: 200,
+                                        child: DescTextWidget(
+                                          desc: futureDatas[index].desc,
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                      Text(
+                                        (futureDatas[index].isClient == true)
+                                            ? 'Müşderi'
+                                            : 'Ulag',
+                                        style: TextStyle(
+                                          color: Colors.green.shade500,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Bricolage',
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
 
-                                    futureDatas[index].checked == true
-                                        ? const SmallText(text: '')
-                                        : const Text(
-                                          'Kabul edilmedik',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: Colors.redAccent,
-                                            fontWeight: FontWeight.w400,
-                                            fontFamily: 'Bricolage',
-                                            fontSize: 12,
-                                          ),
+                                  futureDatas[index].checked == true
+                                      ? const SmallText(text: '')
+                                      : const Text(
+                                        'Kabul edilmedik',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Colors.redAccent,
+                                          fontWeight: FontWeight.w400,
+                                          fontFamily: 'Bricolage',
+                                          fontSize: 12,
                                         ),
+                                      ),
 
-                                    const SizedBox(height: 2),
-                                  ],
-                                ),
+                                  const SizedBox(height: 2),
+                                ],
                               ),
                             ),
                           ],
@@ -498,17 +470,234 @@ class _AddedLogistState extends State<AddedLogist>
     );
   }
 
-  Future<List<LogistPageModel>> getAddedLogistData(String gettoken) async {
-    // isLoading = true;
-    final response = await http.get(
-      Uri.parse('$baseUrl/logistika/added/?author=$gettoken&page=$page'),
+  bool _isDateValid(String date) {
+    final d = DateTime.parse(date);
+    return d.isAfter(DateTime.now());
+  }
+
+  Widget buildLogistModernItemCard({
+    required BuildContext context,
+    required LogistPageModel item,
+  }) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => LogistDetailPage(id: item.id, title: item.title),
+          ),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(
+          horizontal: height(context) / 84.4,
+          vertical: 6,
+        ),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Color.fromRGBO(99, 99, 99, 0.18),
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            /// IMAGE
+            Hero(
+              tag: 'logist-two-${item.id}',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  item.img.isNotEmpty ? item.img : 'assets/no-image.jpg',
+                  width: 90,
+                  height: 110,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            /// CONTENT
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// TITLE
+                  Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: theme.colorScheme.secondary,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Bricolage',
+                      fontSize: 13,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  /// DEADLINE + TYPE
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Ahyrky sene:',
+                            style: TextStyle(
+                              color: theme.colorScheme.secondary,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Bricolage',
+                              fontSize: 10,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            item.lastDate,
+                            style: TextStyle(
+                              color:
+                                  _isDateValid(item.lastDate)
+                                      ? theme.colorScheme.secondary
+                                      : Colors.red,
+                              fontFamily: 'Bricolage',
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            item.isBring ? 'Getirmeli' : 'Alyp gitmeli',
+                            style: TextStyle(
+                              color:
+                                  item.isBring
+                                      ? (SeyirApp.themeNotifier.value ==
+                                              ThemeMode.light
+                                          ? Colors.green.shade500
+                                          : Colors.grey.shade200)
+                                      : Colors.blue,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Bricolage',
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            item.isBring
+                                ? CupertinoIcons.arrow_down_square_fill
+                                : CupertinoIcons.arrow_up_square_fill,
+                            size: 18,
+                            color: item.isBring ? Colors.green : Colors.blue,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  /// DESCRIPTION
+                  Text(
+                    removeHtmlTags(item.desc),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSecondary,
+                      fontFamily: 'Bricolage',
+                      fontSize: 10,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  /// FROM
+                  Row(
+                    children: [
+                      Text(
+                        'Nirden:',
+                        style: TextStyle(
+                          color: theme.colorScheme.secondary,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Bricolage',
+                          fontSize: 10,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(child: SmallText(text: item.nirden)),
+                    ],
+                  ),
+
+                  /// TO + STATUS
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Nirä:',
+                            style: TextStyle(
+                              color: theme.colorScheme.secondary,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Bricolage',
+                              fontSize: 10,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          SizedBox(
+                            width: 120,
+                            child: SmallText(text: item.where),
+                          ),
+                        ],
+                      ),
+                      item.checked
+                          ? const SizedBox()
+                          : const Text(
+                            'Kabul edilmedik',
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontFamily: 'Bricolage',
+                              fontSize: 10,
+                            ),
+                          ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  /// CATEGORY + DATE
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: SmallText(text: item.categoryName),
+                      ),
+                      SmallText(
+                        text:
+                            item.created.toString().substring(0, 10) ==
+                                    formattedDate
+                                ? 'Şu gün'
+                                : item.created.toString().substring(0, 10),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
-    if (response.statusCode == 200) {
-      Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
-      List results = data['results'];
-      return results.map((e) => LogistPageModel.fromJson(e)).toList();
-    } else {
-      return [];
-    }
   }
 }

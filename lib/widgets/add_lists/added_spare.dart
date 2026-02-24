@@ -1,8 +1,7 @@
-// ignore_for_file: unnecessary_import
-import 'package:seyir/pages/create/create_car.dart';
-import 'package:seyir/pages/create/update_car.dart';
-import 'package:seyir/api/fetch_car.dart';
-import 'package:seyir/pages/detail/detail_page.dart';
+import 'package:seyir/pages/create/create_spare.dart';
+import 'package:seyir/pages/create/update_spare.dart';
+import 'package:seyir/api/fetch_spare.dart';
+import 'package:seyir/pages/spare/detail_spare_page.dart';
 import '/main.dart';
 import '/utils/constants.dart';
 import '../../utils/dialogs.dart';
@@ -12,16 +11,17 @@ import 'package:flutter/material.dart';
 import '/utils/models.dart';
 import '../text.dart';
 
-class AddedCarWidget extends StatefulWidget {
+class AddedSparesWidget extends StatefulWidget {
   final String token;
-  const AddedCarWidget({Key? key, required this.token}) : super(key: key);
+  const AddedSparesWidget({Key? key, required this.token}) : super(key: key);
   @override
-  State<AddedCarWidget> createState() => _AddedCarWidgetState();
+  State<AddedSparesWidget> createState() => _AddedSparesWidgetState();
 }
 
-class _AddedCarWidgetState extends State<AddedCarWidget>
+class _AddedSparesWidgetState extends State<AddedSparesWidget>
     with SingleTickerProviderStateMixin {
-  late List<PageModel> futureDatas = [];
+  late List<SparePageModel> futureDatas = [];
+
   final control = ScrollController();
 
   int page = 1;
@@ -54,12 +54,6 @@ class _AddedCarWidgetState extends State<AddedCarWidget>
     }
   }
 
-  void _onScroll() {
-    if (control.position.pixels == control.position.maxScrollExtent) {
-      _loadData();
-    }
-  }
-
   Future<void> _refreshData() async {
     if (!_isRefreshing) {
       _isRefreshing = true;
@@ -67,6 +61,12 @@ class _AddedCarWidgetState extends State<AddedCarWidget>
       futureDatas.clear();
       await _loadData();
       _isRefreshing = false;
+    }
+  }
+
+  void _onScroll() {
+    if (control.position.pixels == control.position.maxScrollExtent) {
+      _loadData();
     }
   }
 
@@ -90,7 +90,7 @@ class _AddedCarWidgetState extends State<AddedCarWidget>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Awtoulaglar',
+                  'Awto şaýlary',
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.secondary,
@@ -106,7 +106,7 @@ class _AddedCarWidgetState extends State<AddedCarWidget>
                         : Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const CreateCar(),
+                            builder: (context) => const CreateSpare(),
                           ),
                         );
                   },
@@ -120,9 +120,9 @@ class _AddedCarWidgetState extends State<AddedCarWidget>
             ),
           ),
           ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
+            physics: const BouncingScrollPhysics(),
             shrinkWrap: true,
-            itemCount: isLoading ? futureDatas.length + 1 : futureDatas.length,
+            itemCount: futureDatas.length,
             itemBuilder: (context, index) {
               if (index < futureDatas.length) {
                 return InkWell(
@@ -131,9 +131,8 @@ class _AddedCarWidgetState extends State<AddedCarWidget>
                       context,
                       MaterialPageRoute(
                         builder:
-                            (context) => DetailPage(
+                            (context) => SpareDetailPage(
                               id: futureDatas[index].id,
-                              query: 'car',
                               title: futureDatas[index].title,
                             ),
                       ),
@@ -141,15 +140,16 @@ class _AddedCarWidgetState extends State<AddedCarWidget>
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: const [
                         BoxShadow(
                           color: Color.fromRGBO(99, 99, 99, 0.18),
                           blurRadius: 8,
+                          spreadRadius: 0,
                           offset: Offset(0, 4),
                         ),
                       ],
+                      color: Theme.of(context).colorScheme.primaryContainer,
                     ),
                     padding: const EdgeInsets.all(8),
                     margin: EdgeInsets.symmetric(
@@ -160,7 +160,7 @@ class _AddedCarWidgetState extends State<AddedCarWidget>
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Hero(
-                          tag: 'car-${futureDatas[index].id}',
+                          tag: 'spares-${futureDatas[index].id}',
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: Image.network(
@@ -229,7 +229,7 @@ class _AddedCarWidgetState extends State<AddedCarWidget>
                                             setState(() {
                                               showDeleteDialog(
                                                 context,
-                                                'car',
+                                                'spares',
                                                 futureDatas[index].id,
                                               );
                                             });
@@ -265,7 +265,7 @@ class _AddedCarWidgetState extends State<AddedCarWidget>
                                                 context,
                                                 MaterialPageRoute(
                                                   builder:
-                                                      (context) => UpdateCar(
+                                                      (context) => UpdateSpare(
                                                         id: int.parse(
                                                           futureDatas[index].id,
                                                         ),

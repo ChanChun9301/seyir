@@ -1,12 +1,10 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:seyir/widgets/add_lists/added_car.dart';
-import 'package:seyir/widgets/add_lists/added_other.dart';
-import 'package:seyir/widgets/add_lists/added_elin.dart';
+import 'package:seyir/widgets/add_lists/added_spare.dart';
 import 'package:seyir/widgets/add_lists/added_service.dart';
 import 'package:flutter/material.dart';
 import '../../pages/logist/added_logist.dart';
 import '../../component/navbar.dart';
-import '../../utils/models.dart';
 
 class AddedList extends StatefulWidget {
   const AddedList({Key? key}) : super(key: key);
@@ -90,9 +88,9 @@ class _AddedListState extends State<AddedList> {
             children: [
               AddedLogist(token: safeToken),
               AddedCarWidget(token: safeToken),
+              AddedSparesWidget(token: safeToken),
               AddedServiceWidget(token: safeToken),
-              AddedElinWidget(token: safeToken),
-              AddedOtherWidget(token: safeToken),
+              // AddedOtherWidget(token: safeToken),
             ],
           );
         },

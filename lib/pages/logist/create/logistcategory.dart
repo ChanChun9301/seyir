@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:seyir/api/fetch_logist.dart';
+import 'package:seyir/api/fetches.dart';
 import 'package:seyir/component/navbar.dart';
-import 'package:seyir/pages/logist/create/create_logist.dart';
-import 'package:seyir/utils/constants.dart';
 import 'package:seyir/utils/models.dart';
 
 class LogistCategoryPage extends StatefulWidget {
@@ -12,13 +10,13 @@ class LogistCategoryPage extends StatefulWidget {
 }
 
 class _LogistCategoryPageState extends State<LogistCategoryPage> {
-  late Future<List<LogistCategory>> _categoriesFuture;
+  late Future<List<CategoryPage>> _categoriesFuture;
   List<SaylananCategory> selectedCategories = [];
 
   @override
   void initState() {
     super.initState();
-    _categoriesFuture = fetchCategories();
+    _categoriesFuture = fetchCategories('logistika');
   }
 
   void _save() {
@@ -67,7 +65,7 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
       ),
       extendBodyBehindAppBar: true,
       drawer: const NavBar(),
-      body: FutureBuilder<List<LogistCategory>>(
+      body: FutureBuilder<List<CategoryPage>>(
         future: _categoriesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -88,7 +86,7 @@ class _LogistCategoryPageState extends State<LogistCategoryPage> {
               final category = mainCategories[index];
               return ExpansionTile(
                 title: Text(
-                  category.name,
+                  category.title,
                   style: TextStyle(
                     fontFamily: 'Bricolage',
                     fontSize: 12,

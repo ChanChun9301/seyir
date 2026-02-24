@@ -22,6 +22,9 @@ class LogistSearchFilter extends SearchDelegate {
 
   bool bring = false;
   bool get = false;
+  int? min;
+  int? max;
+  final bool _validate = false;
 
   TextEditingController minPrice = TextEditingController();
   TextEditingController maxPrice = TextEditingController();
@@ -41,6 +44,7 @@ class LogistSearchFilter extends SearchDelegate {
   @override
   ThemeData appBarTheme(BuildContext context) {
     return Theme.of(context).copyWith(
+      scaffoldBackgroundColor: Theme.of(context).colorScheme.background,
       appBarTheme: AppBarTheme(
         backgroundColor: Theme.of(context).colorScheme.primary,
         toolbarHeight: 40,
@@ -55,13 +59,13 @@ class LogistSearchFilter extends SearchDelegate {
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
-      IconButton(
-        icon: const Icon(Icons.filter_alt_outlined, size: 18),
-        onPressed: () async {
-          await _openFilterSheet(context);
-          showSuggestions(context);
-        },
-      ),
+      // IconButton(
+      //   icon: const Icon(Icons.filter_alt_outlined, size: 18),
+      //   onPressed: () async {
+      //     await _openFilterSheet(context);
+      //     showSuggestions(context);
+      //   },
+      // ),
       IconButton(
         icon: const Icon(Icons.clear, size: 16),
         onPressed: () => query = '',
@@ -80,6 +84,7 @@ class LogistSearchFilter extends SearchDelegate {
   /// ================= FILTER SHEET =================
   Future<void> _openFilterSheet(BuildContext context) {
     return showModalBottomSheet(
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -99,74 +104,259 @@ class LogistSearchFilter extends SearchDelegate {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Filter',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                     ),
                     const SizedBox(height: 10),
 
                     /// CATEGORY
-                    ListTile(
-                      title: const Text('Kategoriýa'),
-                      subtitle: Text(
-                        selectedCategories.map((e) => e.name).join(', '),
+                    Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color.fromRGBO(99, 99, 99, 0.2),
+                            blurRadius: 8,
+                            spreadRadius: 0,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                        color: Theme.of(context).colorScheme.primaryContainer,
                       ),
-                      onTap: () async {
-                        final result =
-                            await Navigator.push<List<SaylananCategory>>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const LogistCategoryPage(),
-                              ),
-                            );
-                        if (result != null) {
-                          setModalState(() => selectedCategories = result);
-                        }
-                      },
+
+                      child: ListTile(
+                        title: Text(
+                          'Kategoriýa',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                        subtitle: Text(
+                          selectedCategories.map((e) => e.name).join(', '),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                        onTap: () async {
+                          final result =
+                              await Navigator.push<List<SaylananCategory>>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LogistCategoryPage(),
+                                ),
+                              );
+                          if (result != null) {
+                            setModalState(() => selectedCategories = result);
+                          }
+                        },
+                      ),
                     ),
+                    SizedBox(height: 5),
 
                     /// ADDRESS
-                    ListTile(
-                      title: const Text('Salgy'),
-                      subtitle: Text(
-                        selectedAddresses.map((e) => e.name).join(', '),
+                    Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color.fromRGBO(99, 99, 99, 0.2),
+                            blurRadius: 8,
+                            spreadRadius: 0,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                        color: Theme.of(context).colorScheme.primaryContainer,
                       ),
-                      onTap: () async {
-                        final result =
-                            await Navigator.push<List<SaylananSalgy>>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const LogistAddressPage(),
-                              ),
-                            );
-                        if (result != null) {
-                          setModalState(() => selectedAddresses = result);
-                        }
-                      },
+
+                      child: ListTile(
+                        title: Text(
+                          'Salgy',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                        subtitle: Text(
+                          selectedAddresses.map((e) => e.name).join(', '),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                        onTap: () async {
+                          final result =
+                              await Navigator.push<List<SaylananSalgy>>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LogistAddressPage(),
+                                ),
+                              );
+                          if (result != null) {
+                            setModalState(() => selectedAddresses = result);
+                          }
+                        },
+                      ),
                     ),
+                    SizedBox(height: 5),
 
                     /// PRICE
-                    TextField(
-                      controller: minPrice,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Min bahasy',
+                    Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color.fromRGBO(99, 99, 99, 0.2),
+                            blurRadius: 8,
+                            spreadRadius: 0,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                      ),
+                      child: TextField(
+                        controller: minPrice,
+                        keyboardType: TextInputType.number,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontSize: 12,
+                          fontFamily: 'Bricolage',
+                        ),
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(12),
+                            ),
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                          ),
+
+                          contentPadding: const EdgeInsets.only(
+                            top: 5,
+                            bottom: 5,
+                            left: 10,
+                            right: 10,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              width: 2,
+                              color: Colors.white38,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              width: 2,
+                              color: Colors.green,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          filled: true,
+                          focusColor: Colors.green[600],
+                          fillColor:
+                              Theme.of(context).colorScheme.primaryContainer,
+                          errorText: _validate ? "Setiri dolduruň!" : null,
+                          labelText: 'Min bahasy',
+                          // hintText:_phoneNumber.get(1),
+                          labelStyle: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
                       ),
                     ),
-                    TextField(
-                      controller: maxPrice,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Max bahasy',
+                    SizedBox(height: 5),
+                    Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color.fromRGBO(99, 99, 99, 0.2),
+                            blurRadius: 8,
+                            spreadRadius: 0,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                      ),
+
+                      child: TextField(
+                        controller: maxPrice,
+                        keyboardType: TextInputType.number,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontSize: 12,
+                          fontFamily: 'Bricolage',
+                        ),
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(12),
+                            ),
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.only(
+                            top: 5,
+                            bottom: 5,
+                            left: 10,
+                            right: 10,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              width: 2,
+                              color: Colors.white38,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              width: 2,
+                              color: Colors.green,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          filled: true,
+                          focusColor: Colors.green[600],
+                          fillColor:
+                              Theme.of(context).colorScheme.primaryContainer,
+                          errorText: _validate ? "Setiri dolduruň!" : null,
+                          labelText: 'Max bahasy',
+                          // hintText:_phoneNumber.get(1),
+                          labelStyle: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
                       ),
                     ),
 
                     /// SWITCHES
                     SwitchListTile(
-                      title: const Text('Getirmeli'),
+                      title: Text(
+                        'Getirmeli',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
                       value: bring,
                       onChanged: (v) {
                         setModalState(() {
@@ -176,7 +366,14 @@ class LogistSearchFilter extends SearchDelegate {
                       },
                     ),
                     SwitchListTile(
-                      title: const Text('Alyp gitmeli'),
+                      title: Text(
+                        'Alyp gitmeli',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
                       value: get,
                       onChanged: (v) {
                         setModalState(() {
@@ -191,7 +388,21 @@ class LogistSearchFilter extends SearchDelegate {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Apply'),
+                        child: Text(
+                          'Gözle',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -325,10 +536,19 @@ class LogistSearchFilter extends SearchDelegate {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  item.img.isNotEmpty ? item.img : 'assets/no-image.jpg',
+                  item.img.isNotEmpty ? item.img : '',
                   width: 90,
                   height: 110,
                   fit: BoxFit.cover,
+                  // Eger URL boş bolsa ýa-da surat ýüklenmese işleýär
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'assets/no-image.jpg',
+                      width: 90,
+                      height: 110,
+                      fit: BoxFit.cover,
+                    );
+                  },
                 ),
               ),
             ),

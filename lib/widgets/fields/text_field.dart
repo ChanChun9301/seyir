@@ -30,7 +30,11 @@ class TextFieldCustom extends StatelessWidget {
       child: TextField(
         controller: ctr,
         maxLines: 1,
-        style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.secondary,
+          fontSize: 14,
+          fontFamily: 'Bricolage',
+        ),
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: const BorderRadius.all(Radius.circular(12)),

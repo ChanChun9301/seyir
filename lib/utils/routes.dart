@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '/pages/logist/logistmain_list.dart';
+import '../pages/logist/logist_main_list.dart';
 import '../pages/homeScreens/home_screen.dart';
 import '../widgets/add_lists/added_list.dart';
 import '../pages/welcome/welcome_screen.dart';

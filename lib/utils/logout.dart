@@ -8,15 +8,10 @@ import 'package:seyir/pages/controls/token_control.dart';
 import 'package:seyir/utils/constants.dart';
 
 Future<void> logout(String token, bool check) async {
-  Map updatedData = {
-    'author': token,
-    'checked': false,
-  };
+  Map updatedData = {'author': token, 'checked': false};
   final response = await http.post(
-    Uri.parse('$baseUrl/user-logout/'),
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    Uri.parse('$baseUrl/logout/'),
+    headers: {'Content-Type': 'application/json'},
     body: json.encode(updatedData),
   );
 

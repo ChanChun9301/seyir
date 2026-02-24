@@ -5,12 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:seyir/main.dart';
 import 'package:seyir/pages/logist/detail_page_logist.dart';
-import 'package:seyir/pages/logist/logist_search_delagate.dart';
 import 'package:seyir/widgets/circulateContainer.dart';
-import 'package:seyir/widgets/filterWidget.dart';
-import '/component/listAppbar.dart';
 import '/utils/constants.dart';
-import '../../../component/navbar.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '/utils/models.dart';
@@ -55,6 +51,15 @@ class _LogistTabTwoListState extends State<LogistTabTwoList>
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant LogistTabTwoList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Eger öňki filter bilen täze filter deň däl bolsa, maglumatlary täzeden çek
+    if (oldWidget.filter != widget.filter) {
+      _loadData(); // Maglumatlary täzeleýän funksiýaňy çagyr
+    }
+  }
+
   Future<void> _loadData() async {
     if (!isLoading) {
       isLoading = true;
@@ -90,87 +95,6 @@ class _LogistTabTwoListState extends State<LogistTabTwoList>
       child: SingleChildScrollView(
         child: Column(
           children: [
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      showSearch(
-                        context: context,
-                        delegate: LogistSearchFilter(),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.search,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    label: Text(
-                      'Gözle',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
-                        Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      padding: MaterialStateProperty.all(
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => const LogistFilterWidget(
-                                client: '',
-                                categories: [],
-                              ),
-                        ),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.sort,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    label: Text(
-                      'Filter',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
-                        Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      padding: MaterialStateProperty.all(
-                        const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
             ListView.builder(
               controller: control,
               physics: const NeverScrollableScrollPhysics(),
@@ -216,7 +140,7 @@ class _LogistTabTwoListState extends State<LogistTabTwoList>
           horizontal: height(context) / 84.4,
           vertical: 6,
         ),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: theme.colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(16),
@@ -236,10 +160,19 @@ class _LogistTabTwoListState extends State<LogistTabTwoList>
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  item.img.isNotEmpty ? item.img : 'assets/no-image.jpg',
+                  item.img.isNotEmpty ? item.img : '',
                   width: 90,
                   height: 110,
                   fit: BoxFit.cover,
+                  // Eger URL boş bolsa ýa-da surat ýüklenmese işleýär
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'assets/no-image.jpg',
+                      width: 90,
+                      height: 110,
+                      fit: BoxFit.cover,
+                    );
+                  },
                 ),
               ),
             ),
@@ -414,13 +347,6 @@ class _LogistTabTwoListState extends State<LogistTabTwoList>
                   ),
                 ],
               ),
-            ),
-
-            /// ARROW
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: theme.colorScheme.outline,
             ),
           ],
         ),

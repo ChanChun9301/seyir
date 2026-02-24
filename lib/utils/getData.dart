@@ -20,7 +20,7 @@ Future<DetailModel> getDetailDataApi(String query, String id) async {
 
 Future<http.Response> deleteData(String query, String id) async {
   final http.Response response = await http.delete(
-    Uri.parse('$baseUrl/$query-list/$id'),
+    Uri.parse('$baseUrl/$query/$id'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
